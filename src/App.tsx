@@ -1,17 +1,128 @@
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ProductGrid from './components/ProductGrid';
 import Register from './components/Register';
 import ProductDetail from './components/ProductDetail';
 import InventoryDashboard from './components/InventoryDashboard';
+import ClientDashboard from './components/ClientDashboard';
+import CartSidebar, { CartItem } from './components/CartSidebar';
 import { motion, AnimatePresence } from 'motion/react';
-import { useState } from 'react';
 
-type View = 'landing' | 'detail' | 'dashboard';
+type View = 'landing' | 'detail' | 'dashboard' | 'profile';
 
 export default function App() {
-  const [showRegister, setShowRegister] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [view, setView] = useState<View>('landing');
+  const [user, setUser] = useState<any>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isProcessingCart, setIsProcessingCart] = useState(false);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('mirage_user');
+    if (savedUser) {
+      try { setUser(JSON.parse(savedUser)); } catch(e) {}
+    }
+    const savedCart = localStorage.getItem('mirage_cart');
+    if (savedCart) {
+      try { setCartItems(JSON.parse(savedCart)); } catch(e) {}
+    }
+
+    // Check query params if returned from MP payment
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    if (status === 'approved' || status === 'success') {
+       toast.success("¡Pago exitoso! Su pedido ha sido procesado.");
+       setCartItems([]);
+       localStorage.removeItem('mirage_cart');
+       window.history.replaceState({}, document.title, "/");
+    } else if (status === 'failure') {
+       toast.error("Hubo un fallo cancelando el pago de Mercado Pago.");
+       window.history.replaceState({}, document.title, "/");
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('mirage_cart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('mirage_token');
+    localStorage.removeItem('mirage_user');
+    setUser(null);
+    setCartItems([]);
+    if (view === 'dashboard') {
+      setView('landing');
+    }
+  };
+
+  const handleNavigation = (destination: View) => {
+    if (destination === 'dashboard') {
+      if (!user) {
+        setShowAuthModal(true);
+        return;
+      }
+      if (user.role !== 'admin') {
+        toast.error("Acceso denegado. Se requiere cuenta de administrador.");
+        return;
+      }
+    }
+    setView(destination);
+  };
+
+  const handleAddToCart = (product: any) => {
+    if (!user) {
+       setShowAuthModal(true);
+       return;
+    }
+    setCartItems(prev => {
+       const exists = prev.find(i => i.productId === product.id);
+       if (exists) {
+         return prev.map(i => i.productId === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+       }
+       return [...prev, {
+          productId: product.id,
+          title: product.name,
+          price: product.price,
+          quantity: 1,
+          image: product.images[0] || ''
+       }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const handleCheckout = async (method: 'efectivo' | 'mercadopago') => {
+    setIsProcessingCart(true);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cartItems,
+          paymentMethod: method,
+          userId: user.id
+        })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error);
+
+      if (method === 'efectivo') {
+         setCartItems([]);
+         setIsCartOpen(false);
+         toast.success("¡Orden Creada! Contacte al administrador para acordar la entrega y el pago.");
+      } else if (method === 'mercadopago' && data.init_point) {
+         window.location.href = data.init_point;
+      }
+    } catch (e: any) {
+       console.error("Error al procesar compra", e);
+       toast.error("Error procesando compra devuelta: " + e.message);
+    } finally {
+       setIsProcessingCart(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-dark selection:bg-gold/30 selection:text-white">
@@ -23,14 +134,21 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <Navbar onRegisterClick={() => setShowRegister(true)} />
+            <Navbar 
+              onRegisterClick={() => setShowAuthModal(true)} 
+              user={user} 
+              onLogout={handleLogout}
+              cartCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}
+              onCartClick={() => setIsCartOpen(true)}
+              onProfileClick={() => setView('profile')}
+            />
             
             <main>
               <Hero />
               
-              <ProductGrid onProductClick={() => setView('detail')} />
+              {/* Le pasamos add to cart */}
+              <ProductGrid onProductClick={() => setView('detail')} onAddToCart={handleAddToCart} />
 
-              {/* Sommelier IA Section */}
               <section className="relative py-32 px-8 overflow-hidden bg-darker">
                 <div className="max-w-6xl mx-auto flex flex-col items-center text-center relative z-10">
                   <motion.div 
@@ -50,7 +168,6 @@ export default function App() {
                 </div>
               </section>
 
-              {/* Heritage Section */}
               <section className="py-32 px-8 md:px-24 bg-dark">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
                   <div className="relative">
@@ -82,12 +199,14 @@ export default function App() {
                     {item}
                   </a>
                 ))}
-                <button 
-                  onClick={() => setView('dashboard')}
-                  className="text-xs uppercase tracking-widest text-gold/40 hover:text-gold transition-colors duration-300"
-                >
-                  Dashboard
-                </button>
+                {user?.role === 'admin' && (
+                  <button 
+                    onClick={() => handleNavigation('dashboard')}
+                    className="text-xs uppercase tracking-widest text-gold hover:text-gold-light font-bold transition-colors duration-300"
+                  >
+                    Inventory Dashboard
+                  </button>
+                )}
               </div>
               <div className="text-gray-700 text-[10px] uppercase tracking-[0.3em] text-center">
                 © 2024 ALLAH FRAGANCIAS. THE OBSIDIAN MIRAGE.
@@ -101,13 +220,37 @@ export default function App() {
         )}
 
         {view === 'dashboard' && (
-          <InventoryDashboard key="dashboard" onBack={() => setView('landing')} />
+          <div key="dashboard">
+             <InventoryDashboard onBack={() => setView('landing')} />
+          </div>
+        )}
+
+        {view === 'profile' && (
+          <div key="profile">
+            <ClientDashboard onBack={() => setView('landing')} />
+          </div>
         )}
       </AnimatePresence>
 
+      <CartSidebar 
+         isOpen={isCartOpen}
+         onClose={() => setIsCartOpen(false)}
+         items={cartItems}
+         isProcessing={isProcessingCart}
+         onRemoveItem={(id) => setCartItems(p => p.filter(i => i.productId !== id))}
+         onUpdateQuantity={(id, qty) => setCartItems(p => p.map(i => i.productId === id ? { ...i, quantity: qty } : i))}
+         onCheckout={handleCheckout}
+      />
+
       <AnimatePresence>
-        {showRegister && (
-          <Register onClose={() => setShowRegister(false)} />
+        {showAuthModal && (
+          <Register 
+             onClose={() => setShowAuthModal(false)} 
+             onSuccess={(userData) => {
+                 setUser(userData);
+                 setShowAuthModal(false);
+             }} 
+          />
         )}
       </AnimatePresence>
     </div>

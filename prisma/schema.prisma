@@ -14,7 +14,42 @@ model Product {
   price      Float
   stock      Int
   status     String   @default("OK") // "OK" | "LOW"
-  image      String
+  images     String[] @default([])
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  orderItems OrderItem[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("cliente") // "admin" o "cliente"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  total         Float
+  paymentMethod String   // "efectivo" | "mercadopago"
+  status        String   @default("pending") // "pending" | "paid" | "cancelled"
+  mpPreferenceId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity  Int
+  price     Float
 }
