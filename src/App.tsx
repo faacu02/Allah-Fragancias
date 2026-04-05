@@ -53,9 +53,9 @@ export default function App() {
     localStorage.removeItem('mirage_user');
     setUser(null);
     setCartItems([]);
-    if (view === 'dashboard') {
-      setView('landing');
-    }
+    toast.success('Sesión finalizada exitosamente.');
+    setView('landing');
+    setShowAuthModal(true);
   };
 
   const handleNavigation = (destination: View) => {
@@ -249,6 +249,7 @@ export default function App() {
              onSuccess={(userData) => {
                  setUser(userData);
                  setShowAuthModal(false);
+                 toast.success(`Bienvenido, ${userData.name?.split(' ')[0] || 'Miembro'}.`);
              }} 
           />
         )}
