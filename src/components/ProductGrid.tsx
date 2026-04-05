@@ -21,7 +21,11 @@ const PRODUCTS = [
   }
 ];
 
-export default function ProductGrid() {
+interface ProductGridProps {
+  onProductClick: () => void;
+}
+
+export default function ProductGrid({ onProductClick }: ProductGridProps) {
   return (
     <section className="py-32 px-8 md:px-24 bg-dark">
       <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
@@ -42,6 +46,7 @@ export default function ProductGrid() {
             price={product.price}
             description={product.description}
             image={product.image}
+            onClick={onProductClick}
           />
         ))}
       </div>

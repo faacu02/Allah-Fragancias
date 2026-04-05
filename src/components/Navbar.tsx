@@ -1,7 +1,11 @@
 import { ShoppingBag, Menu } from 'lucide-react';
 import { motion } from 'motion/react';
 
-export default function Navbar() {
+interface NavbarProps {
+  onRegisterClick: () => void;
+}
+
+export default function Navbar({ onRegisterClick }: NavbarProps) {
   return (
     <nav className="fixed top-0 w-full z-50 bg-dark/60 backdrop-blur-xl flex justify-between items-center px-8 h-20 border-b border-gold/10">
       <div className="flex items-center gap-4">
@@ -18,7 +22,13 @@ export default function Navbar() {
         ALLAH FRAGANCIAS
       </motion.div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6">
+        <button 
+          onClick={onRegisterClick}
+          className="hidden md:block text-gold text-[10px] font-bold uppercase tracking-[0.3em] hover:text-gold-light transition-colors cursor-pointer"
+        >
+          Únete al Círculo
+        </button>
         <button className="text-gold cursor-pointer hover:text-gold-light transition-colors duration-300 relative">
           <ShoppingBag size={24} />
           <span className="absolute -top-1 -right-1 bg-gold-light text-dark text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">

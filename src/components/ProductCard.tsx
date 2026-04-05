@@ -5,14 +5,16 @@ interface ProductProps {
   price: string;
   description: string;
   image: string;
+  onClick?: () => void;
   key?: number | string;
 }
 
-export default function ProductCard({ name, price, description, image }: ProductProps) {
+export default function ProductCard({ name, price, description, image, onClick }: ProductProps) {
   return (
     <motion.div 
       whileHover={{ y: -10 }}
-      className="group relative p-8 border border-gold/10 hover:bg-white/5 transition-colors duration-700"
+      onClick={onClick}
+      className="group relative p-8 border border-gold/10 hover:bg-white/5 transition-colors duration-700 cursor-pointer"
     >
       <div className="aspect-[3/4] bg-darker mb-8 overflow-hidden">
         <img 
