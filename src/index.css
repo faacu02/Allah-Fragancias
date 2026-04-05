@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@300;400;600;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Noto Serif", serif;
+  --font-sans: "Manrope", sans-serif;
+  
+  --color-gold-light: #f2ca50;
+  --color-gold: #d4af37;
+  --color-gold-dark: #b6912b;
+  --color-dark: #131313;
+  --color-darker: #0e0e0e;
+}
+
+body {
+  @apply bg-dark text-white font-sans;
+}
+
+h1, h2, h3, h4 {
+  @apply font-serif;
+}
