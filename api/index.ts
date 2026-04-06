@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import { sendOrderEmail } from './mailer';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import multer from 'multer';
@@ -284,6 +285,19 @@ app.post('/api/checkout', async (req: any, res: any) => {
 
     // Lógica Específica
     if (paymentMethod === 'efectivo') {
+       if (userId) {
+          const userObj = await prisma.user.findUnique({ where: { id: userId } });
+          if (userObj) {
+            await sendOrderEmail(userObj.email, {
+               orderId: newOrder.id,
+               userName: userObj.name,
+               total,
+               paymentMethod,
+               items: items
+            }, false);
+          }
+       }
+
        return res.json({ 
           success: true, 
           message: 'Orden creada. Coordina con el administrador.', 
@@ -300,6 +314,9 @@ app.post('/api/checkout', async (req: any, res: any) => {
          unit_price: i.price,
          currency_id: 'ARS',
        }));
+
+       // Agregamos notification_url si quisieramos webhooks vivos al subirse:
+       // notification_url: 'https://midominio.com/api/webhooks/mercadopago'
 
        const createdPreference = await preference.create({
          body: {
@@ -331,6 +348,27 @@ app.post('/api/checkout', async (req: any, res: any) => {
   } catch (error) {
     console.error("Error en Checkout:", error);
     res.status(500).json({ error: 'Error procesando la compra' });
+  }
+});
+
+// Endpoint Webhook para recibir notificaciones reales de MP
+app.post('/api/webhooks/mercadopago', async (req: any, res: any) => {
+  try {
+    const { type, data } = req.body;
+    
+    // Si es un evento de pago
+    if (type === 'payment' && data?.id) {
+       // Aca se haria un fetch o uso SDK para buscar el payment por su ID
+       // y verificar si su status === 'approved'. Logica omitida para brevedad.
+       
+       // Simulamos que encontramos la orden en DB con ese payment.
+       // await sendOrderEmail(user.email, orderContext, true);
+       console.log("Notificación de MP procesada", data.id);
+    }
+    
+    res.status(200).send('OK');
+  } catch (error) {
+    res.status(500).send('Webhook error');
   }
 });
 
