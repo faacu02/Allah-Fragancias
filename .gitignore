@@ -6,3 +6,10 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Next.js
+.next/
+out/
+.vercel/
+next-env.d.ts
+.turbo/
