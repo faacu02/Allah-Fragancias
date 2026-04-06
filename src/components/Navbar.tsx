@@ -46,18 +46,20 @@ export default function Navbar({ onRegisterClick, user, onLogout, cartCount = 0,
         ) : (
           <button 
             onClick={onRegisterClick}
-            className="hidden md:block text-gold text-[10px] font-bold uppercase tracking-[0.3em] hover:text-gold-light transition-colors cursor-pointer"
+            className="text-gold/70 hover:text-gold transition-colors text-[10px] uppercase tracking-[0.2em]"
           >
-            Únete al Círculo
+             INGRESAR
           </button>
         )}
         
-        {(user?.role === 'cliente' || !user) && (
-          <button className="text-gold cursor-pointer hover:text-gold-light transition-colors duration-300 relative group" onClick={() => !user ? onRegisterClick() : onCartClick?.()}>
+        {(!user || user.role !== 'admin') && (
+          <button onClick={onCartClick} className="relative text-white hover:text-gold transition-colors cursor-pointer ml-2">
             <ShoppingBag size={24} />
-            <span className="absolute -top-1 -right-1 bg-gold-light text-dark text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-              {cartCount}
-            </span>
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-gold text-dark text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
           </button>
         )}
       </div>

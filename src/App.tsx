@@ -77,6 +77,10 @@ export default function App() {
        setShowAuthModal(true);
        return;
     }
+    if (user.role === 'admin') {
+       toast.error("Las cuentas administrativas no pueden utilizar el carrito de compras.");
+       return;
+    }
     setCartItems(prev => {
        const exists = prev.find(i => i.productId === product.id);
        if (exists) {
