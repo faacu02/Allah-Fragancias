@@ -19,3 +19,16 @@ body {
 h1, h2, h3, h4 {
   @apply font-serif;
 }
+
+/* Fix forms autofill en chrome para mantener dark mode */
+/* Fix forms autofill en chrome para mantener dark mode */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #0e0e0e inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    transition: background-color 5000s ease-in-out 0s;
+    caret-color: #d4af37;
+    border-radius: 0 !important;
+}

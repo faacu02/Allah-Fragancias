@@ -9,7 +9,7 @@ interface RegisterProps {
 
 export default function Register({ onClose, onSuccess }: RegisterProps) {
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', phone: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -96,23 +96,43 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
             {error && <div className="text-red-500 text-xs text-center border border-red-500/20 py-2 bg-red-500/10">{error}</div>}
             
             {!isLogin && (
-              <div className="relative group">
-                <input 
-                  type="text" 
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
-                  placeholder="Nombre Completo"
-                  required
-                />
-                <label 
-                  htmlFor="name"
-                  className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75"
-                >
-                  Nombre Completo
-                </label>
-              </div>
+              <>
+                <div className="relative group">
+                  <input 
+                    type="text" 
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
+                    placeholder="Nombre Completo"
+                    required
+                  />
+                  <label 
+                    htmlFor="name"
+                    className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75 peer-autofill:-translate-y-6 peer-autofill:scale-75 peer-autofill:text-gold"
+                  >
+                    Nombre Completo
+                  </label>
+                </div>
+                
+                <div className="relative group">
+                  <input 
+                    type="tel" 
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
+                    placeholder="Teléfono Celular"
+                    required
+                  />
+                  <label 
+                    htmlFor="phone"
+                    className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75 peer-autofill:-translate-y-6 peer-autofill:scale-75 peer-autofill:text-gold"
+                  >
+                    Teléfono Celular
+                  </label>
+                </div>
+              </>
             )}
 
             <div className="relative group">
@@ -121,13 +141,13 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                 id="email"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
+                className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
                 placeholder="Correo Electrónico"
                 required
               />
               <label 
                 htmlFor="email"
-                className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75"
+                className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75 peer-autofill:-translate-y-6 peer-autofill:scale-75 peer-autofill:text-gold"
               >
                  Correo Electrónico
               </label>
@@ -139,13 +159,13 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                 id="password"
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
+                className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
                 placeholder="Contraseña"
                 required
               />
               <label 
                 htmlFor="password"
-                className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75"
+                className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75 peer-autofill:-translate-y-6 peer-autofill:scale-75 peer-autofill:text-gold"
               >
                 Contraseña
               </label>

@@ -12,6 +12,7 @@ export const transporter = nodemailer.createTransport({
 interface OrderContext {
   orderId: string;
   userName: string;
+  phone?: string;
   total: number;
   paymentMethod: string;
   items: Array<{ title: string; quantity: number; price: number }>;
@@ -103,6 +104,64 @@ export const sendOrderEmail = async (toEmail: string, context: OrderContext, isP
     return true;
   } catch (err) {
     console.error("Error crítico enviando correo SMTP:", err);
+    return false;
+  }
+};
+
+// Notificar al dueño de la tienda
+export const sendAdminNotificationEmail = async (adminEmail: string, context: OrderContext, isPaid: boolean = false) => {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return false;
+  
+  const statusTitle = isPaid ? "NUEVO PAGO APROBADO" : "NUEVA ORDEN RECIBIDA";
+  const actionText = isPaid 
+    ? "El pago ha sido procesado por Mercado Pago. Prepárate para despachar este paquete."
+    : "El cliente ha seleccionado pagar en EFECTIVO. Contactalo a la brevedad para coordinar.";
+
+  const itemsHtml = context.items.map(item => `
+    <tr>
+      <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); color: #ccc;">
+        <strong>${item.title}</strong> (Qt: ${item.quantity})
+      </td>
+      <td style="text-align: right; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); color: #d4af37;">
+        $${(item.price * item.quantity).toFixed(2)}
+      </td>
+    </tr>
+  `).join('');
+
+  const htmlBody = `
+    <div style="background-color: #111; padding: 30px; font-family: sans-serif; color: #fff;">
+      <h2 style="color: #d4af37;">${statusTitle}</h2>
+      <p style="color: #aaa; margin-bottom: 30px;">${actionText}</p>
+
+      <div style="background-color: #000; border: 1px solid #d4af37; padding: 20px;">
+        <h3 style="color: #fff; margin-top: 0;">Detalles del Cliente</h3>
+        <ul style="color: #ccc; padding-left: 20px; font-size: 14px;">
+          <li><strong>Nombre:</strong> ${context.userName}</li>
+          <li><strong>Teléfono:</strong> ${context.phone || 'No registrado'}</li>
+          <li><strong>ID de Orden:</strong> #${context.orderId.slice(-8)}</li>
+          <li><strong>Método:</strong> ${context.paymentMethod.toUpperCase()}</li>
+        </ul>
+
+        <h3 style="color: #fff; margin-top: 30px; border-bottom: 1px solid #333; padding-bottom: 10px;">Productos</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          ${itemsHtml}
+        </table>
+        
+        <h2 style="text-align: right; color: #d4af37; margin-top: 20px;">TOTAL: $${context.total.toFixed(2)}</h2>
+      </div>
+    </div>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Allah Notificaciones" <${process.env.SMTP_USER}>`,
+      to: adminEmail,
+      subject: `🚨 VENTA: ${statusTitle} - ${context.userName}`,
+      html: htmlBody,
+    });
+    return true;
+  } catch (err) {
+    console.error("Error notificando al admin:", err);
     return false;
   }
 };

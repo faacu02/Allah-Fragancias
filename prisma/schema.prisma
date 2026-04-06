@@ -25,6 +25,7 @@ model User {
   email     String   @unique
   password  String
   name      String?
+  phone     String?
   role      String   @default("cliente") // "admin" o "cliente"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
