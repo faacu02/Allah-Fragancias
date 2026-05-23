@@ -58,11 +58,9 @@ A premium e-commerce platform for luxury fragrances built with Next.js 15, React
    cd allah-fragancias---luxury-perfumery
    ```
 
-2. Install dependencies using pnpm (recommended) or npm
+2. Install dependencies
    ```bash
    pnpm install
-   # or
-   npm install
    ```
 
 3. Set up environment variables
@@ -106,19 +104,17 @@ A premium e-commerce platform for luxury fragrances built with Next.js 15, React
 
 4. Initialize the database
    ```bash
-   npx prisma migrate dev --name init
+   pnpm prisma migrate dev --name init
    ```
 
    Optional: Seed with sample data
    ```bash
-   npx prisma db seed
+   pnpm prisma db seed
    ```
 
 5. Run the development server
    ```bash
    pnpm dev
-   # or
-   npm run dev
    ```
 
    The app will be available at http://localhost:3000
@@ -127,12 +123,7 @@ A premium e-commerce platform for luxury fragrances built with Next.js 15, React
 
 ```bash
 pnpm build
-# or
-npm run build
-
 pnpm start
-# or
-npm start
 ```
 
 ## API Documentation
