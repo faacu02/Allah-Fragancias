@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trash2, ShoppingBag, CreditCard, Banknote } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Banknote } from 'lucide-react';
 
 export interface CartItem {
   productId: string;
@@ -18,7 +18,7 @@ interface CartSidebarProps {
   items: CartItem[];
   onRemoveItem: (id: string) => void;
   onUpdateQuantity: (id: string, qty: number) => void;
-  onCheckout: (method: 'efectivo' | 'mercadopago') => void;
+  onCheckout: (method: 'efectivo' | 'transferencia') => void;
   isProcessing: boolean;
 }
 
@@ -103,29 +103,30 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                 <span className="font-serif text-3xl text-gold">${total.toFixed(2)}</span>
               </div>
               
-              {items.length > 0 && (
-                <div className="space-y-4">
-                  <button 
-                    disabled={isProcessing}
-                    onClick={() => onCheckout('mercadopago')}
-                    className="w-full bg-[#009EE3] text-white flex items-center justify-center gap-3 py-4 text-xs font-bold uppercase tracking-widest hover:bg-[#0089C5] transition-colors disabled:opacity-50"
-                  >
-                    <CreditCard size={18} />
-                    {isProcessing ? 'Procesando...' : 'Pagar con Mercado Pago'}
-                  </button>
-                  <button 
-                    disabled={isProcessing}
-                    onClick={() => onCheckout('efectivo')}
-                    className="w-full bg-gold/10 border border-gold text-gold flex items-center justify-center gap-3 py-4 text-xs font-bold uppercase tracking-widest hover:bg-gold hover:text-dark transition-colors disabled:opacity-50"
-                  >
-                    <Banknote size={18} />
-                    {isProcessing ? 'Procesando...' : 'Pagar en Efectivo (Acordar)'}
-                  </button>
-                  <p className="text-[9px] text-gray-600 text-center uppercase tracking-widest px-4 leading-relaxed">
-                    Al proceder confirma que los precios están listados en moneda local (ARS Peso Argentino).
-                  </p>
-                </div>
-              )}
+               {items.length > 0 && (
+                 <div className="space-y-4">
+                   <button 
+                     disabled={isProcessing}
+                     onClick={() => onCheckout('efectivo')}
+                     className="w-full bg-gold/10 border border-gold text-gold flex items-center justify-center gap-3 py-4 text-xs font-bold uppercase tracking-widest hover:bg-gold hover:text-dark transition-colors disabled:opacity-50"
+                   >
+                     <Banknote size={18} />
+                     {isProcessing ? 'Procesando...' : 'Pagar en Efectivo (Acordar)'}
+                   </button>
+                   <button 
+                     disabled={isProcessing}
+                     onClick={() => onCheckout('transferencia')}
+                     className="w-full bg-green-500/10 border border-green-500 text-green-400 flex items-center justify-center gap-3 py-4 text-xs font-bold uppercase tracking-widest hover:bg-green-500/20 hover:text-green-500 transition-colors disabled:opacity-50"
+                   >
+                     {/* WhatsApp icon from lucide-react: we need to import it */}
+                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                     {isProcessing ? 'Procesando...' : 'Pagar por Transferencia'}
+                   </button>
+                   <p className="text-[9px] text-gray-600 text-center uppercase tracking-widest px-4 leading-relaxed">
+                     Al proceder confirma que los precios están listados en moneda local (ARS Peso Argentino).
+                   </p>
+                 </div>
+               )}
             </div>
           </motion.div>
         </>

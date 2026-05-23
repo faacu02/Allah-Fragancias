@@ -3,24 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
-export default function OrdersTab({ getToken }: { getToken: () => string | null }) {
+export default function OrdersTab() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
 
-  const fetchOrders = async () => {
-    setLoadingOrders(true);
-    try {
-      const res = await fetch('/api/admin/orders', {
-         headers: { 'Authorization': `Bearer ${getToken()}` }
-      });
-      const data = await res.json();
-      if(res.ok) setOrders(data);
-    } catch (e) {
-      toast.error("Error cargando órdenes");
-    } finally {
-      setLoadingOrders(false);
-    }
-  };
+   const fetchOrders = async () => {
+     setLoadingOrders(true);
+     try {
+       const res = await fetch('/api/admin/orders');
+       const data = await res.json();
+       if(res.ok) setOrders(data);
+     } catch (e) {
+       toast.error("Error cargando órdenes");
+     } finally {
+       setLoadingOrders(false);
+     }
+   };
 
   useEffect(() => {
     fetchOrders();
@@ -30,14 +28,13 @@ export default function OrdersTab({ getToken }: { getToken: () => string | null 
      if(!window.confirm('¿Marcar pago recibido? Esta acción enviará el Email dorado de "Aprobado" al usuario y a su propio correo.')) return;
      
      try {
-       const res = await fetch(`/api/admin/orders/${orderId}/status`, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}` 
-          },
-          body: JSON.stringify({ status: 'approved' })
-       });
+      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+         method: 'PUT',
+         headers: { 
+           'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({ status: 'approved' })
+      });
        if(!res.ok) throw new Error("Error approving");
        toast.success("Orden Aprobada Correctamente. Emails disparados.");
        fetchOrders();

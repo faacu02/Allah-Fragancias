@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { sendOrderEmail, sendAdminNotificationEmail } from '@/lib/mailer';
-
-const mpClient = new MercadoPagoConfig({ 
-  accessToken: process.env.MP_ACCESS_TOKEN || 'TEST-dummy-token' 
-});
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,43 +51,47 @@ export async function POST(request: NextRequest) {
 
        return NextResponse.json({ 
           success: true, 
-          message: 'Orden creada. Coordina con el administrador.', 
+          message: 'Orden creada. Coordina con el administrador para el pago en efectivo.', 
           orderId: newOrder.id 
        });
-    } else if (paymentMethod === 'mercadopago') {
-       const preference = new Preference(mpClient);
-       
-       const mpItems = items.map((i: any) => ({
-         id: i.productId,
-         title: i.title,
-         quantity: i.quantity,
-         unit_price: i.price,
-         currency_id: 'ARS',
-       }));
+    } else if (paymentMethod === 'transferencia') {
+       // Bank transfer details - these should come from environment variables in production
+       const bankDetails = {
+         bankName: process.env.BANK_NAME || 'Banco Ejemplo',
+         accountType: process.env.ACCOUNT_TYPE || 'Cuenta Corriente',
+         accountNumber: process.env.ACCOUNT_NUMBER || '123456789',
+         alias: process.env.ALIAS || 'ALLAH.FRAGANCIAS',
+         cuit: process.env.CUIT || '20-12345678-9',
+         holderName: process.env.HOLDER_NAME || 'Allah Fragancias'
+       };
 
-       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
-       const createdPreference = await preference.create({
-         body: {
-           items: mpItems,
-           external_reference: newOrder.id,
-           back_urls: {
-              success: `${baseUrl}/?status=success`,
-              failure: `${baseUrl}/?status=failure`,
-              pending: `${baseUrl}/?status=pending`
-           },
-         }
-       });
-
-       await prisma.order.update({
-          where: { id: newOrder.id },
-          data: { mpPreferenceId: createdPreference.id }
-       });
+       if (userId) {
+          const userObj = await prisma.user.findUnique({ where: { id: userId } });
+          if (userObj) {
+            const context = {
+               orderId: newOrder.id,
+               userName: userObj.name || 'Cliente',
+               phone: userObj.phone || '',
+               total,
+               paymentMethod,
+               items: items,
+               bankDetails
+            };
+            await sendOrderEmail(userObj.email, context, false);
+            
+            const adminUser = await prisma.user.findFirst({ where: { role: 'admin' } });
+            if (adminUser) {
+               await sendAdminNotificationEmail(adminUser.email, context, false);
+            }
+          }
+       }
 
        return NextResponse.json({ 
           success: true, 
-          init_point: createdPreference.init_point, 
-          orderId: newOrder.id 
+          message: 'Orden creada. Envía el comprobante de transferencia por WhatsApp para confirmar tu pago.', 
+          orderId: newOrder.id,
+          bankDetails,
+          showWhatsApp: true
        });
     }
 

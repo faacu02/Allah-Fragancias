@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { signToken } from '@/lib/auth';
+import { signToken, setTokenCookie } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,12 @@ export async function POST(request: NextRequest) {
     if (!validPassword) return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
 
     const token = signToken({ id: user.id, email: user.email, role: user.role });
-    return NextResponse.json({ token, user: { id: user.id, email: user.email, name: user.name, phone: user.phone, role: user.role } });
+    const userResponse = { id: user.id, email: user.email, name: user.name, phone: user.phone, role: user.role };
+    
+    // Set cookie and return user data (without token)
+    const res = NextResponse.json({ user: userResponse });
+    setTokenCookie(res, token);
+    return res;
   } catch (error) {
     return NextResponse.json({ error: 'Error al iniciar sesión.' }, { status: 500 });
   }

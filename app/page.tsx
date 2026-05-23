@@ -24,10 +24,21 @@ export default function Home() {
   const [isProcessingCart, setIsProcessingCart] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('mirage_user');
-    if (savedUser) {
-      try { setUser(JSON.parse(savedUser)); } catch(e) {}
-    }
+    // Fetch user data from API on mount
+    const fetchUser = async () => {
+      try {
+        const res = await fetch('/api/me');
+        const data = await res.json();
+        if (data.user) {
+          setUser(data.user);
+        }
+      } catch (e) {
+        console.error('Failed to fetch user:', e);
+      }
+    };
+
+    fetchUser();
+
     const savedCart = localStorage.getItem('mirage_cart');
     if (savedCart) {
       try { setCartItems(JSON.parse(savedCart)); } catch(e) {}
@@ -50,9 +61,12 @@ export default function Home() {
     localStorage.setItem('mirage_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('mirage_token');
-    localStorage.removeItem('mirage_user');
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Logout failed:', e);
+    }
     setUser(null);
     setCartItems([]);
     toast.success('Sesión finalizada exitosamente.');
@@ -99,36 +113,40 @@ export default function Home() {
     setIsCartOpen(true);
   };
 
-  const handleCheckout = async (method: 'efectivo' | 'mercadopago') => {
-    setIsProcessingCart(true);
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cartItems,
-          paymentMethod: method,
-          userId: user.id
-        })
-      });
-      const data = await res.json();
-      
-      if (!res.ok) throw new Error(data.error);
+   const handleCheckout = async (method: 'efectivo' | 'transferencia') => {
+     setIsProcessingCart(true);
+     try {
+       const res = await fetch('/api/checkout', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+           items: cartItems,
+           paymentMethod: method,
+           userId: user.id
+         })
+       });
+       const data = await res.json();
+       
+       if (!res.ok) throw new Error(data.error);
 
-      if (method === 'efectivo') {
-         setCartItems([]);
-         setIsCartOpen(false);
-         toast.success("¡Orden Creada! Contacte al administrador para acordar la entrega y el pago.");
-      } else if (method === 'mercadopago' && data.init_point) {
-         window.location.href = data.init_point;
-      }
-    } catch (e: any) {
-       console.error("Error al procesar compra", e);
-       toast.error("Error procesando compra: " + e.message);
-    } finally {
-       setIsProcessingCart(false);
-    }
-  };
+       if (method === 'efectivo') {
+          setCartItems([]);
+          setIsCartOpen(false);
+          toast.success("¡Orden Creada! Contacte al administrador para acordar la entrega y el pago.");
+       } else if (method === 'transferencia') {
+          setCartItems([]);
+          setIsCartOpen(false);
+          // Show success message with instructions to send comprobante via WhatsApp
+          toast.success("¡Orden creada! Por favor envía el comprobante de transferencia por WhatsApp para confirmar tu pago.");
+          // Optionally, you could show a modal with bank details here
+       }
+     } catch (e: any) {
+        console.error("Error al procesar compra", e);
+        toast.error("Error procesando compra: " + e.message);
+     } finally {
+        setIsProcessingCart(false);
+     }
+   };
 
   return (
     <div className="min-h-screen bg-dark selection:bg-gold/30 selection:text-white">

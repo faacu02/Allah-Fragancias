@@ -14,7 +14,7 @@ interface Product {
   images: string[];
 }
 
-export default function InventoryTab({ getToken }: { getToken: () => string | null }) {
+export default function InventoryTab() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,35 +45,31 @@ export default function InventoryTab({ getToken }: { getToken: () => string | nu
     fetchProducts();
   }, []);
 
-  const handleUpdate = async (id: string, field: 'price' | 'stock', value: string) => {
-    try {
-      const res = await fetch(`/api/products/${id}`, {
-        method: 'PUT',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}` 
-        },
-        body: JSON.stringify({ [field]: value })
-      });
-      const updated = await res.json();
-      setProducts(products.map(p => p.id === id ? updated : p));
-    } catch(error) {
-      console.error("Error actualizando producto:", error);
-    }
-  };
+   const handleUpdate = async (id: string, field: 'price' | 'stock', value: string) => {
+     try {
+       const res = await fetch(`/api/products/${id}`, {
+         method: 'PUT',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ [field]: value })
+       });
+       const updated = await res.json();
+       setProducts(products.map(p => p.id === id ? updated : p));
+     } catch(error) {
+       console.error("Error actualizando producto:", error);
+     }
+   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este perfume?')) return;
-    try {
-      await fetch(`/api/products/${id}`, { 
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-      });
-      setProducts(products.filter(p => p.id !== id));
-    } catch (error) {
-      console.error("Error eliminando producto:", error);
-    }
-  };
+   const handleDelete = async (id: string) => {
+     if (!window.confirm('¿Estás seguro de que deseas eliminar este perfume?')) return;
+     try {
+       await fetch(`/api/products/${id}`, { 
+           method: 'DELETE'
+       });
+       setProducts(products.filter(p => p.id !== id));
+     } catch (error) {
+       console.error("Error eliminando producto:", error);
+     }
+   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -107,7 +103,6 @@ export default function InventoryTab({ getToken }: { getToken: () => string | nu
       
       const res = await fetch(url, {
         method,
-        headers: { 'Authorization': `Bearer ${getToken()}` },
         body: formData
       });
 
