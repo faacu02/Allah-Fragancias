@@ -119,7 +119,7 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                      className="w-full bg-green-500/10 border border-green-500 text-green-400 flex items-center justify-center gap-3 py-4 text-xs font-bold uppercase tracking-widest hover:bg-green-500/20 hover:text-green-500 transition-colors disabled:opacity-50"
                    >
                      {/* WhatsApp icon from lucide-react: we need to import it */}
-                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                      {isProcessing ? 'Procesando...' : 'Pagar por Transferencia'}
                    </button>
                    <p className="text-[9px] text-gray-600 text-center uppercase tracking-widest px-4 leading-relaxed">
