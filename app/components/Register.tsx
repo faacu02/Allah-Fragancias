@@ -15,35 +15,74 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+   const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     // Basic client-side validation
+     if (!isLogin) {
+       if (!formData.name.trim()) {
+         setError('El nombre es requerido');
+         return;
+       }
+       if (!formData.email.trim()) {
+         setError('El email es requerido');
+         return;
+       }
+       // Simple email regex
+       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+       if (!emailRegex.test(formData.email)) {
+         setError('El email no es válido');
+         return;
+       }
+       if (!formData.password || formData.password.length < 6) {
+         setError('La contraseña debe tener al menos 6 caracteres');
+         return;
+       }
+       if (formData.phone && !/^\d+$/.test(formData.phone)) {
+         setError('El teléfono debe contener solo números');
+         return;
+       }
+     } else {
+       // Login validation
+       if (!formData.email.trim()) {
+         setError('El email es requerido');
+         return;
+       }
+       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+       if (!emailRegex.test(formData.email)) {
+         setError('El email no es válido');
+         return;
+       }
+       if (!formData.password) {
+         setError('La contraseña es requerida');
+         return;
+       }
+     }
 
-    try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || 'Ocurrió un error');
-      }
+     setError('');
+     setLoading(true);
 
-      localStorage.setItem('mirage_token', data.token);
-      localStorage.setItem('mirage_user', JSON.stringify(data.user));
-      
-      onSuccess(data.user);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+     try {
+       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+       const res = await fetch(endpoint, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(formData)
+       });
+       
+       const data = await res.json();
+       
+       if (!res.ok) {
+         throw new Error(data.error || 'Ocurrió un error');
+       }
+
+       
+       onSuccess(data.user);
+     } catch (err: any) {
+       setError(err.message);
+     } finally {
+       setLoading(false);
+     }
+   };
 
   return (
     <motion.div 

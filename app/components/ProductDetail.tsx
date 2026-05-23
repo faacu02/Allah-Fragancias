@@ -9,6 +9,21 @@ interface ProductDetailProps {
 }
 
 export default function ProductDetail({ onBack }: ProductDetailProps) {
+  // In a real app, this data would come from props or state
+  const productData = {
+    name: "Oud Al-Malik",
+    description: "A fragrance that transcends time, capturing the majestic soul of the Orient. Oud Al-Malik is an olfactory journey through sacred temples and royal courts.",
+    image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=1200",
+    brand: "Allah Fragancias",
+    sku: "OUD-AL-MALIK-001",
+    category: "The Mirage Collection",
+    offers: {
+      price: 240.00,
+      priceCurrency: "USD",
+      availability: "http://schema.org/InStock"
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, x: 20 }}
@@ -16,6 +31,30 @@ export default function ProductDetail({ onBack }: ProductDetailProps) {
       exit={{ opacity: 0, x: -20 }}
       className="min-h-screen bg-dark pt-20 pb-32"
     >
+      {/* JSON-LD Structured Data for SEO */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org/",
+          "@type": "Product",
+          name: productData.name,
+          description: productData.description,
+          image: productData.image,
+          brand: {
+            "@type": "Brand",
+            name: productData.brand
+          },
+          sku: productData.sku,
+          category: productData.category,
+          offers: {
+            "@type": "Offer",
+            url: window.location.href,
+            priceCurrency: productData.offers.priceCurrency,
+            price: productData.offers.price,
+            itemCondition: "https://schema.org/NewCondition",
+            availability: productData.offers.availability
+          }
+        })}
+      </script>
       <nav className="fixed top-0 w-full z-50 bg-dark/60 backdrop-blur-xl flex justify-between items-center px-8 h-20 border-b border-gold/10">
         <button onClick={onBack} className="text-gold cursor-pointer hover:text-gold-light transition-colors">
           <ArrowLeft size={24} />

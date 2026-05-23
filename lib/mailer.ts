@@ -24,9 +24,11 @@ export const sendOrderEmail = async (toEmail: string, context: OrderContext, isP
   }
 
   const statusTitle = isPaid ? "PAGO APROBADO" : "NUEVA ORDEN";
-  const statusMessage = isPaid 
-    ? "Hemos recibido el pago de tu encargo exitosamente. Las finas notas de tu nueva adquisición comenzarán a ser preparadas."
-    : "Hemos reservado tus fragancias. Coordina con el administrador para finalizar tu adquisición o abona el saldo pendiente.";
+   const statusMessage = isPaid 
+     ? "Hemos recibido el pago de tu encargo exitosamente. Las finas notas de tu nueva adquisición comenzarán a ser preparadas."
+      : context.paymentMethod === 'transferencia'
+        ? "Hemos reservado tus fragancias. Por favor envía el comprobante de transferencia por WhatsApp para confirmar tu pago."
+        : "Hemos reservado tus fragancias. Coordina con el administrador para finalizar tu adquisición o abona el saldo pendiente.";
 
   const itemsHtml = context.items.map(item => `
     <tr>
@@ -99,9 +101,11 @@ export const sendAdminNotificationEmail = async (adminEmail: string, context: Or
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return false;
   
   const statusTitle = isPaid ? "NUEVO PAGO APROBADO" : "NUEVA ORDEN RECIBIDA";
-  const actionText = isPaid 
-    ? "El pago ha sido procesado por Mercado Pago. Prepárate para despachar este paquete."
-    : "El cliente ha seleccionado pagar en EFECTIVO. Contactalo a la brevedad para coordinar.";
+   const actionText = isPaid 
+     ? "El pago ha sido procesado por Mercado Pago. Prepárate para despachar este paquete."
+      : context.paymentMethod === 'transferencia'
+        ? "El cliente ha seleccionado TRANSFERENCIA BANCARIA. Espera el comprobante por WhatsApp para confirmar el pago."
+        : "El cliente ha seleccionado pagar en EFECTIVO. Contactalo a la brevedad para coordinar.";
 
   const itemsHtml = context.items.map(item => `
     <tr>
