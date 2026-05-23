@@ -13,3 +13,4 @@ out/
 .vercel/
 next-env.d.ts
 .turbo/
+package-lock.json

@@ -9,7 +9,7 @@ import OrdersTab from './OrdersTab';
 export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<'inventory' | 'orders'>('inventory');
 
-  const getToken = () => localStorage.getItem('mirage_token');
+
 
   return (
     <div className="min-h-screen bg-dark flex flex-col md:flex-row text-gray-200">
@@ -54,11 +54,11 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
           </div>
         </header>
 
-        {activeTab === 'inventory' ? (
-           <InventoryTab getToken={getToken} />
-        ) : (
-           <OrdersTab getToken={getToken} />
-        )}
+         {activeTab === 'inventory' ? (
+            <InventoryTab />
+         ) : (
+            <OrdersTab />
+         )}
       </main>
     </div>
   );

@@ -20,23 +20,21 @@ export default function ClientDashboard({ onBack }: { onBack: () => void }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const token = localStorage.getItem('mirage_token');
-      if (!token) return;
-      try {
-        const res = await fetch('/api/my-orders', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-        setOrders(data);
-      } catch (error) {
-        toast.error("Error al cargar historial de órdenes.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrders();
-  }, []);
+   useEffect(() => {
+     const fetchOrders = async () => {
+       try {
+         const res = await fetch('/api/my-orders');
+         if (!res.ok) throw new Error('Failed to fetch');
+         const data = await res.json();
+         setOrders(data);
+       } catch (error) {
+         toast.error("Error al cargar historial de órdenes.");
+       } finally {
+         setLoading(false);
+       }
+     };
+     fetchOrders();
+   }, []);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-dark pt-24 px-8 md:px-24 pb-32">
@@ -73,7 +71,7 @@ export default function ClientDashboard({ onBack }: { onBack: () => void }) {
                     ) : (
                        <span className="text-emerald-500 flex items-center gap-1"><CheckCircle size={12}/> Confirmado</span>
                     )}
-                    <span className="text-gray-500">· {order.paymentMethod === 'mercadopago' ? 'Mercado Pago' : 'Efectivo'}</span>
+                    <span className="text-gray-500">· {order.paymentMethod === 'transferencia' ? 'Transferencia' : 'Efectivo'}</span>
                   </div>
                 </div>
               </div>
