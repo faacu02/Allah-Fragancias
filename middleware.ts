@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyAuth } from './lib/auth';
+import { authRatelimit, apiRatelimit } from './lib/rate-limit';
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
@@ -17,6 +18,12 @@ function addSecurityHeaders(response: NextResponse) {
   return response;
 }
 
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return request.headers.get('x-real-ip') || 'unknown';
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -25,6 +32,28 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/favicon.ico')
   ) {
     return addSecurityHeaders(NextResponse.next());
+  }
+
+  if (pathname.startsWith('/api/')) {
+    const ip = getClientIp(request);
+    let ratelimit = apiRatelimit;
+
+    if (pathname.startsWith('/api/auth/login') || pathname.startsWith('/api/auth/register')) {
+      ratelimit = authRatelimit;
+    }
+
+    if (ratelimit) {
+      const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+      const response = success ? NextResponse.next() : NextResponse.json(
+        { error: 'Demasiadas solicitudes. Intenta de nuevo más tarde.' },
+        { status: 429 }
+      );
+      response.headers.set('X-RateLimit-Limit', String(limit));
+      response.headers.set('X-RateLimit-Remaining', String(remaining));
+      response.headers.set('X-RateLimit-Reset', String(reset));
+      addSecurityHeaders(response);
+      return response;
+    }
   }
 
   const isAuthenticated = await verifyAuth(request);
