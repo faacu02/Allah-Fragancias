@@ -12,6 +12,7 @@ import ClientDashboard from './components/ClientDashboard';
 import CartSidebar, { CartItem } from './components/CartSidebar';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSearchParams } from 'next/navigation';
+import { X, Package, FileText, User } from 'lucide-react';
 
 type View = 'landing' | 'detail' | 'dashboard' | 'profile';
 
@@ -23,6 +24,7 @@ export default function Home() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isProcessingCart, setIsProcessingCart] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     // Fetch user data from API on mount
@@ -166,6 +168,7 @@ export default function Home() {
               cartCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}
               onCartClick={() => setIsCartOpen(true)}
               onProfileClick={() => setView('profile')}
+              onMenuClick={() => setIsMenuOpen(true)}
             />
             
             <main>
@@ -250,6 +253,75 @@ export default function Home() {
       />
 
       <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200]"
+          >
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
+            <motion.aside
+              initial={{ x: -320 }}
+              animate={{ x: 0 }}
+              exit={{ x: -320 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="absolute left-0 top-0 h-full w-80 bg-darker border-r border-gold/15 p-8 flex flex-col"
+            >
+              <div className="flex justify-between items-center mb-12">
+                <span className="text-gold font-serif text-xl tracking-[0.2em] uppercase">Allah</span>
+                <button onClick={() => setIsMenuOpen(false)} className="text-gray-500 hover:text-gold transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              {!user ? (
+                <div className="flex flex-col gap-4 mt-8">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-4">Bienvenido</p>
+                  <button
+                    onClick={() => { setIsMenuOpen(false); setShowAuthModal(true); }}
+                    className="w-full py-3 border border-gold/20 text-gold text-xs font-bold uppercase tracking-widest hover:bg-gold/10 transition-colors"
+                  >
+                    Ingresar / Registrarse
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gold/10">
+                    <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center">
+                      <User size={18} className="text-gold" />
+                    </div>
+                    <div>
+                      <p className="text-white text-sm font-serif">{user.name || 'Miembro'}</p>
+                      <p className="text-[10px] text-gray-500 uppercase tracking-widest">{user.role === 'admin' ? 'Administrador' : 'Cliente'}</p>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2 px-3">Navegación</p>
+
+                  {user.role === 'admin' ? (
+                    <button
+                      onClick={() => { setIsMenuOpen(false); handleNavigation('dashboard'); }}
+                      className="flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest text-gold hover:bg-gold/10 transition-colors border-l-2 border-gold font-bold"
+                    >
+                      <Package size={16} />
+                      Panel de Inventario
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setIsMenuOpen(false); setView('profile'); }}
+                      className="flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest text-gold hover:bg-gold/10 transition-colors border-l-2 border-gold font-bold"
+                    >
+                      <FileText size={16} />
+                      Mis Órdenes
+                    </button>
+                  )}
+                </div>
+              )}
+            </motion.aside>
+          </motion.div>
+        )}
+
         {showAuthModal && (
           <Register 
              onClose={() => setShowAuthModal(false)} 

@@ -10,13 +10,14 @@ interface NavbarProps {
   cartCount?: number;
   onCartClick?: () => void;
   onProfileClick?: () => void;
+  onMenuClick?: () => void;
 }
 
-export default function Navbar({ onRegisterClick, user, onLogout, cartCount = 0, onCartClick, onProfileClick }: NavbarProps) {
+export default function Navbar({ onRegisterClick, user, onLogout, cartCount = 0, onCartClick, onProfileClick, onMenuClick }: NavbarProps) {
   return (
     <nav className="fixed top-0 w-full z-50 bg-dark/60 backdrop-blur-xl flex justify-between items-center px-4 md:px-8 h-20 border-b border-gold/10">
       <div className="flex items-center gap-4">
-        <button className="text-gold cursor-pointer hover:text-gold-light transition-colors duration-300">
+        <button onClick={onMenuClick} className="text-gold cursor-pointer hover:text-gold-light transition-colors duration-300">
           <Menu size={24} />
         </button>
       </div>
