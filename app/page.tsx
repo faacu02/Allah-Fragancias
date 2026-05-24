@@ -22,6 +22,7 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isProcessingCart, setIsProcessingCart] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   useEffect(() => {
     // Fetch user data from API on mount
@@ -170,26 +171,9 @@ export default function Home() {
             <main>
               <Hero />
               
-              <ProductGrid onProductClick={() => setView('detail')} onAddToCart={handleAddToCart} />
+              <ProductGrid onProductClick={(product) => { setSelectedProduct(product); setView('detail'); }} onAddToCart={handleAddToCart} />
 
-              <section className="relative py-32 px-8 overflow-hidden bg-darker">
-                <div className="max-w-6xl mx-auto flex flex-col items-center text-center relative z-10">
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    className="w-24 h-24 mb-10 flex items-center justify-center bg-white/5 border border-gold/20"
-                  >
-                    <div className="text-gold text-4xl">IA</div>
-                  </motion.div>
-                  <h2 className="font-serif text-4xl md:text-6xl text-white mb-6 tracking-tighter">Sommelier IA</h2>
-                  <p className="max-w-2xl text-gray-400 text-lg md:text-xl font-light mb-12 italic leading-relaxed">
-                    &quot;Deje que nuestra IA encuentre su aroma perfecto. Una experiencia sensorial guiada por algoritmos de perfumería ancestral.&quot;
-                  </p>
-                  <button className="bg-gold text-dark px-16 py-5 text-sm font-bold uppercase tracking-[0.3em] hover:bg-gold-light transition-all duration-500 shadow-2xl shadow-gold/10">
-                    Consultar Sommelier
-                  </button>
-                </div>
-              </section>
+
 
               <section className="py-32 px-8 md:px-24 bg-dark">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
@@ -238,8 +222,8 @@ export default function Home() {
           </motion.div>
         )}
 
-        {view === 'detail' && (
-          <ProductDetail key="detail" onBack={() => setView('landing')} />
+        {view === 'detail' && selectedProduct && (
+          <ProductDetail product={selectedProduct} onBack={() => setView('landing')} onAddToCart={handleAddToCart} />
         )}
 
         {view === 'dashboard' && (
