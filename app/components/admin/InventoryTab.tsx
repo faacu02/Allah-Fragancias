@@ -11,6 +11,7 @@ interface Product {
   price: number;
   stock: number;
   status: string;
+  description?: string | null;
   images: string[];
 }
 
@@ -22,7 +23,7 @@ export default function InventoryTab() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [newProduct, setNewProduct] = useState({ name: '', collection: '', price: '', stock: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', collection: '', price: '', stock: '', description: '' });
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   
@@ -88,6 +89,7 @@ export default function InventoryTab() {
     formData.append('collection', newProduct.collection);
     formData.append('price', newProduct.price);
     formData.append('stock', newProduct.stock);
+    formData.append('description', newProduct.description);
     
     if (editingId) {
         formData.append('existingImages', JSON.stringify(existingImages));
@@ -121,7 +123,7 @@ export default function InventoryTab() {
 
   const openNewModal = () => {
       setEditingId(null);
-      setNewProduct({ name: '', collection: '', price: '', stock: '' });
+      setNewProduct({ name: '', collection: '', price: '', stock: '', description: '' });
       setExistingImages([]);
       setNewImageFiles([]);
       setIsModalOpen(true);
@@ -133,7 +135,8 @@ export default function InventoryTab() {
           name: product.name,
           collection: product.collection,
           price: product.price.toString(),
-          stock: product.stock.toString()
+          stock: product.stock.toString(),
+          description: product.description || ''
       });
       setExistingImages(product.images || []);
       setNewImageFiles([]);
@@ -298,7 +301,18 @@ export default function InventoryTab() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+               <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest text-gold/70">Descripción</label>
+                <textarea
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                  className="w-full bg-transparent border border-gold/20 py-2 px-3 text-white focus:outline-none focus:border-gold transition-colors placeholder-gray-700 min-h-[80px] resize-y text-sm"
+                  placeholder="Descripción del perfume..."
+                  rows={3}
+                />
+              </div>
+
+               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest text-gold/70">Precio ($)</label>
                   <input 
@@ -409,12 +423,19 @@ export default function InventoryTab() {
                           <p className="text-gold tracking-[0.3em] text-[10px] uppercase mb-2">{previewProduct.collection}</p>
                           <h2 className="font-serif text-3xl text-white mb-6 leading-tight">{previewProduct.name}</h2>
                           
-                          <div className="flex items-baseline gap-2 mb-8">
-                              <span className="text-gold text-lg">$</span>
-                              <span className="text-4xl font-serif text-white">{previewProduct.price}</span>
-                          </div>
-                          
-                          <div className={`inline-flex items-center gap-2 px-4 py-2 border ${previewProduct.status === 'LOW' ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-green-500/10 border-green-500/20 text-green-500'}`}>
+                           <div className="flex items-baseline gap-2 mb-6">
+                               <span className="text-gold text-lg">$</span>
+                               <span className="text-4xl font-serif text-white">{previewProduct.price}</span>
+                           </div>
+
+                           {previewProduct.description && (
+                             <div className="mb-6">
+                               <p className="text-[10px] uppercase tracking-[0.2em] text-gold/50 mb-2">Descripción</p>
+                               <p className="text-gray-400 text-xs leading-relaxed">{previewProduct.description}</p>
+                             </div>
+                           )}
+                           
+                           <div className={`inline-flex items-center gap-2 px-4 py-2 border ${previewProduct.status === 'LOW' ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-green-500/10 border-green-500/20 text-green-500'}`}>
                               <span className="w-2 h-2 rounded-full bg-current"></span>
                               <span className="text-xs uppercase tracking-widest font-bold">Stock: {previewProduct.stock} uds</span>
                           </div>

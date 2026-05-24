@@ -86,6 +86,13 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
               </span>
             </div>
 
+            {product.description && (
+              <div className="mb-10 max-w-lg">
+                <h3 className="text-[10px] uppercase tracking-[0.3em] text-gold/50 mb-4">Descripción</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{product.description}</p>
+              </div>
+            )}
+
             <div className="space-y-8 max-w-md">
               <div className="flex flex-col gap-4">
                 <button
