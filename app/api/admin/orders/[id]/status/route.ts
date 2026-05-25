@@ -10,7 +10,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id: orderId } = await params;
     const { status } = await request.json();
-    
+
     if (status !== 'approved') return NextResponse.json({ error: 'Status no soportado.' }, { status: 400 });
 
     const order = await prisma.order.findUnique({
@@ -23,9 +23,26 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!order) return NextResponse.json({ error: 'Orden no encontrada.' }, { status: 404 });
 
-    const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
-      data: { status: 'approved' }
+    // Use a transaction to ensure atomicity of order status update and stock deduction
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      // Update order status
+      const updatedOrder = await tx.order.update({
+        where: { id: orderId },
+        data: { status: 'approved' }
+      });
+
+      // Update product stock for each item in the order
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: { decrement: item.quantity },
+            status: item.product.stock - item.quantity < 10 ? 'LOW' : 'OK'
+          }
+        });
+      }
+
+      return updatedOrder;
     });
 
     const context = {

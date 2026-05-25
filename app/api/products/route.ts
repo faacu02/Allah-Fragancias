@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
         price: parseFloat(formData.get('price') as string) || 0,
         stock: parseInt(formData.get('stock') as string) || 0,
         status: parseInt(formData.get('stock') as string) < 10 ? 'LOW' : 'OK',
+        description: formData.get('description') as string || null,
         images: images
       }
     });

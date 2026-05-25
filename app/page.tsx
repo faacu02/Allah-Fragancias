@@ -11,7 +11,6 @@ import InventoryDashboard from './components/admin/InventoryDashboard';
 import ClientDashboard from './components/ClientDashboard';
 import CartSidebar, { CartItem } from './components/CartSidebar';
 import { motion, AnimatePresence } from 'motion/react';
-import { useSearchParams } from 'next/navigation';
 import { X, Package, FileText, User } from 'lucide-react';
 
 type View = 'landing' | 'detail' | 'dashboard' | 'profile';
@@ -25,9 +24,14 @@ export default function Home() {
   const [isProcessingCart, setIsProcessingCart] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetToken, setResetToken] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   useEffect(() => {
-    // Fetch user data from API on mount
     const fetchUser = async () => {
       try {
         const res = await fetch('/api/me');
@@ -48,6 +52,13 @@ export default function Home() {
     }
 
     const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('reset-token');
+    if (token) {
+      setResetToken(token);
+      setShowResetPassword(true);
+      window.history.replaceState({}, document.title, "/");
+    }
+
     const status = urlParams.get('status');
     if (status === 'approved' || status === 'success') {
        toast.success("¡Pago exitoso! Su pedido ha sido procesado.");
@@ -253,6 +264,17 @@ export default function Home() {
       />
 
       <AnimatePresence>
+        {showAuthModal && (
+          <Register 
+             onClose={() => setShowAuthModal(false)} 
+             onSuccess={(userData) => {
+                 setUser(userData);
+                 setShowAuthModal(false);
+                 toast.success(`Bienvenido, ${userData.name?.split(' ')[0] || 'Miembro'}.`);
+             }} 
+          />
+        )}
+
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -322,15 +344,78 @@ export default function Home() {
           </motion.div>
         )}
 
-        {showAuthModal && (
-          <Register 
-             onClose={() => setShowAuthModal(false)} 
-             onSuccess={(userData) => {
-                 setUser(userData);
-                 setShowAuthModal(false);
-                 toast.success(`Bienvenido, ${userData.name?.split(' ')[0] || 'Miembro'}.`);
-             }} 
-          />
+        {showResetPassword && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-darker flex flex-col items-center justify-center px-8"
+          >
+            <div className="w-full max-w-md">
+              <div className="font-serif text-xl font-bold tracking-[0.2em] text-gold uppercase text-center mb-10">
+                ALLAH FRAGANCIAS
+              </div>
+              {resetSuccess ? (
+                <div className="text-center">
+                  <p className="text-gold text-sm mb-4">Contraseña actualizada exitosamente</p>
+                  <p className="text-gray-400 text-xs">Ahora podés iniciar sesión con tu nueva contraseña.</p>
+                  <button
+                    onClick={() => setShowResetPassword(false)}
+                    className="mt-8 text-gold text-xs uppercase tracking-widest hover:underline"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!resetPassword || resetPassword.length < 6) {
+                    setResetError('La contraseña debe tener al menos 6 caracteres');
+                    return;
+                  }
+                  setResetError('');
+                  setResetLoading(true);
+                  try {
+                    const res = await fetch('/api/auth/reset-password', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ token: resetToken, password: resetPassword })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    setResetSuccess(true);
+                    toast.success('Contraseña actualizada exitosamente');
+                  } catch (err: any) {
+                    setResetError(err.message);
+                  } finally {
+                    setResetLoading(false);
+                  }
+                }}>
+                  <h2 className="font-serif text-4xl text-gold-light leading-tight tracking-tighter mb-4 text-center">
+                    Nueva Contraseña
+                  </h2>
+                  <p className="text-gray-400 text-sm leading-relaxed tracking-widest uppercase text-center mb-10">
+                    Ingresá tu nueva contraseña
+                  </p>
+                  {resetError && <div className="text-red-500 text-xs text-center border border-red-500/20 py-2 bg-red-500/10 mb-6">{resetError}</div>}
+                  <div className="relative group mb-10">
+                    <input
+                      type="password" id="reset-password" value={resetPassword}
+                      onChange={(e) => setResetPassword(e.target.value)}
+                      className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
+                      placeholder="Nueva Contraseña" required
+                    />
+                    <label htmlFor="reset-password" className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
+                      Nueva Contraseña
+                    </label>
+                  </div>
+                  <button disabled={resetLoading} className="w-full bg-gradient-to-r from-gold to-gold-dark text-dark font-bold py-5 tracking-[0.2em] uppercase text-xs hover:opacity-90 active:scale-[0.98] transition-all duration-500 shadow-xl shadow-gold/10">
+                    {resetLoading ? 'CARGANDO...' : 'RESTABLECER CONTRASEÑA'}
+                  </button>
+                </form>
+              )}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
