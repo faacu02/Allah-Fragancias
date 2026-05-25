@@ -1,18 +1,52 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 
-export default function Hero() {
+const carouselImages = [
+  "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1920",
+  "https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&q=80&w=1920",
+  "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=1920",
+  "https://images.unsplash.com/photo-1563170351-be82bc888aa4?auto=format&fit=crop&q=80&w=1920",
+];
+
+interface HeroProps {
+  onExploreClick?: () => void;
+}
+
+export default function Hero({ onExploreClick }: HeroProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % carouselImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative h-screen flex items-center overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <img 
-          alt="Luxury Perfume" 
-          className="w-full h-full object-cover opacity-60 scale-105"
-          referrerPolicy="no-referrer"
-          src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&q=80&w=1920" 
-        />
+        {carouselImages.map((src, idx) => (
+          <img
+            key={idx}
+            alt="Luxury Perfume"
+            className={`absolute inset-0 w-full h-full object-cover opacity-60 scale-105 transition-opacity duration-1000 ${idx === currentIndex ? 'opacity-60' : 'opacity-0'}`}
+            referrerPolicy="no-referrer"
+            src={src}
+          />
+        ))}
         <div className="absolute inset-0 bg-gradient-to-r from-dark via-transparent to-transparent"></div>
+      </div>
+
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3">
+        {carouselImages.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentIndex(idx)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-gold w-6' : 'bg-white/40 hover:bg-white/70'}`}
+          />
+        ))}
       </div>
 
       <div className="relative z-10 px-8 md:px-24 max-w-4xl">
@@ -50,11 +84,8 @@ export default function Hero() {
           transition={{ delay: 0.7 }}
           className="flex flex-col md:flex-row gap-6"
         >
-          <button className="bg-gold text-dark px-12 py-4 text-sm font-bold uppercase tracking-[0.2em] hover:bg-gold-light transition-all duration-500">
+          <button onClick={onExploreClick} className="bg-gold text-dark px-12 py-4 text-sm font-bold uppercase tracking-[0.2em] hover:bg-gold-light transition-all duration-500">
             Explorar Colección
-          </button>
-          <button className="border border-gold/30 text-gold px-12 py-4 text-sm font-bold uppercase tracking-[0.2em] hover:bg-gold/10 transition-all duration-500">
-            Ver Video
           </button>
         </motion.div>
       </div>

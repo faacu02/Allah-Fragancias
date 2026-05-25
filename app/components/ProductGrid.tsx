@@ -28,7 +28,7 @@ export default function ProductGrid({ onProductClick, onAddToCart }: ProductGrid
   }, []);
 
   return (
-    <section className="py-32 px-8 md:px-24 bg-dark">
+    <section id="coleccion" className="py-32 px-8 md:px-24 bg-dark">
       <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
         <div>
           <span className="text-gold text-xs font-bold uppercase tracking-[0.4em] mb-4 block">Selected Works</span>

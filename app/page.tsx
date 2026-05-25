@@ -183,7 +183,7 @@ export default function Home() {
             />
             
             <main>
-              <Hero />
+              <Hero onExploreClick={() => document.getElementById('coleccion')?.scrollIntoView({ behavior: 'smooth' })} />
               
               <ProductGrid onProductClick={(product) => { setSelectedProduct(product); setView('detail'); }} onAddToCart={handleAddToCart} />
 
