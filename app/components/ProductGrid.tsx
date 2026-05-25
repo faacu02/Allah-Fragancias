@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import ProductCard from './ProductCard';
 
 interface ProductGridProps {
@@ -21,6 +22,7 @@ export default function ProductGrid({ onProductClick, onAddToCart }: ProductGrid
       })
       .catch(err => {
          console.error("Error loading products", err);
+         toast.error("Error al cargar productos");
          setLoading(false);
       });
   }, []);

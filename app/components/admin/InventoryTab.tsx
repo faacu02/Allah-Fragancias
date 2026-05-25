@@ -37,6 +37,7 @@ export default function InventoryTab() {
       setProducts(data);
     } catch (error) {
       console.error("Error cargando productos:", error);
+      toast.error("Error al cargar productos");
     } finally {
       setLoading(false);
     }
@@ -57,6 +58,7 @@ export default function InventoryTab() {
        setProducts(products.map(p => p.id === id ? updated : p));
      } catch(error) {
        console.error("Error actualizando producto:", error);
+       toast.error("Error al actualizar producto");
      }
    };
 
@@ -69,6 +71,7 @@ export default function InventoryTab() {
        setProducts(products.filter(p => p.id !== id));
      } catch (error) {
        console.error("Error eliminando producto:", error);
+       toast.error("Error al eliminar producto");
      }
    };
 
