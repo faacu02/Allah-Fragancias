@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken, setTokenCookie } from '@/lib/auth';
-import { sendOrderEmail } from '@/lib/mailer';
+import { sendWelcomeEmail } from '@/lib/mailer';
 import validator from 'validator';
 
 export async function POST(request: NextRequest) {
@@ -46,14 +46,7 @@ export async function POST(request: NextRequest) {
 
     // Send welcome email
     try {
-      await sendOrderEmail(user.email, {
-        orderId: 'WELCOME-' + user.id,
-        userName: user.name || 'Miembro',
-        phone: user.phone || '',
-        total: 0,
-        paymentMethod: 'WELCOME',
-        items: []
-      }, false);
+      await sendWelcomeEmail(user.email, user.name || 'Miembro');
     } catch (emailError) {
       console.warn('Failed to send welcome email:', emailError);
     }

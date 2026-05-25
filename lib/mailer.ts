@@ -8,6 +8,53 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
+export const sendWelcomeEmail = async (toEmail: string, userName: string) => {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn("Correo no enviado: Credenciales SMTP faltantes");
+    return false;
+  }
+
+  try {
+    await transporter.sendMail({
+      from: `"Allah Fragancias" <${process.env.SMTP_USER}>`,
+      to: toEmail,
+      subject: 'Bienvenido a Allah Fragancias',
+      html: `
+        <div style="background-color: #0d0d0d; margin: 0; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff;">
+          <div style="max-width: 500px; margin: 0 auto; border: 1px solid rgba(212, 175, 55, 0.3); background-color: #000000; padding: 40px;">
+            <div style="text-align: center; border-bottom: 1px solid rgba(212, 175, 55, 0.1); padding-bottom: 30px; margin-bottom: 40px;">
+              <h1 style="color: #d4af37; font-family: serif; letter-spacing: 4px; text-transform: uppercase; margin: 0; font-size: 24px;">
+                Allah Fragancias
+              </h1>
+              <p style="color: #666; font-size: 10px; letter-spacing: 5px; text-transform: uppercase; margin-top: 10px;">Luxurious Collection</p>
+            </div>
+            <h2 style="font-family: serif; color: #fff; font-size: 22px; margin-bottom: 15px;">Bienvenido/a ${userName},</h2>
+            <p style="color: #aaaaaa; font-size: 14px; line-height: 1.6; letter-spacing: 0.5px;">
+              Te has unido al círculo exclusivo de Allah Fragancias. Ahora podés explorar nuestra colección de esencias del desierto y realizar tus pedidos.
+            </p>
+            <div style="text-align: center; margin: 40px 0;">
+              <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}" style="background-color: #d4af37; color: #000; padding: 14px 32px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; display: inline-block;">
+                Explorar Colección
+              </a>
+            </div>
+            <div style="text-align: center; margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(212, 175, 55, 0.1);">
+              <p style="color: #444; font-size: 12px; line-height: 1.5;">
+                Gracias por elegir la exclusividad.<br>
+                Allah Fragancias
+              </p>
+            </div>
+          </div>
+        </div>
+      `
+    });
+    console.log("Correo de bienvenida enviado a:", toEmail);
+    return true;
+  } catch (err) {
+    console.error("Error enviando correo de bienvenida:", err);
+    return false;
+  }
+};
+
 export const sendPasswordResetEmail = async (toEmail: string, token: string) => {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
     console.warn("Correo no enviado: Credenciales SMTP faltantes");
