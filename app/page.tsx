@@ -24,6 +24,7 @@ export default function Home() {
   const [isProcessingCart, setIsProcessingCart] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState<{ orderId: string; paymentMethod: string } | null>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetToken, setResetToken] = useState('');
   const [resetPassword, setResetPassword] = useState('');
@@ -143,23 +144,19 @@ export default function Home() {
        
        if (!res.ok) throw new Error(data.error);
 
-       if (method === 'efectivo') {
-          setCartItems([]);
-          setIsCartOpen(false);
-          toast.success("¡Orden Creada! Contacte al administrador para acordar la entrega y el pago.");
-       } else if (method === 'transferencia') {
-          setCartItems([]);
-          setIsCartOpen(false);
-          // Show success message with instructions to send comprobante via WhatsApp
-          toast.success("¡Orden creada! Por favor envía el comprobante de transferencia por WhatsApp para confirmar tu pago.");
-          // Optionally, you could show a modal with bank details here
-       }
+       setCheckoutSuccess({ orderId: data.orderId, paymentMethod: method });
+       setCartItems([]);
      } catch (e: any) {
         console.error("Error al procesar compra", e);
         toast.error("Error procesando compra: " + e.message);
      } finally {
         setIsProcessingCart(false);
      }
+   };
+
+   const handleCloseCart = () => {
+     setIsCartOpen(false);
+     setCheckoutSuccess(null);
    };
 
   return (
@@ -255,9 +252,10 @@ export default function Home() {
 
       <CartSidebar 
          isOpen={isCartOpen}
-         onClose={() => setIsCartOpen(false)}
+         onClose={handleCloseCart}
          items={cartItems}
          isProcessing={isProcessingCart}
+         checkoutSuccess={checkoutSuccess}
          onRemoveItem={(id) => setCartItems(p => p.filter(i => i.productId !== id))}
          onUpdateQuantity={(id, qty) => setCartItems(p => p.map(i => i.productId === id ? { ...i, quantity: qty } : i))}
          onCheckout={handleCheckout}
