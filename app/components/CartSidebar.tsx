@@ -88,42 +88,44 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                     : 'Coordina la entrega por WhatsApp'}
                 </p>
 
-                {checkoutSuccess.paymentMethod === 'transferencia' && checkoutSuccess.bankDetails && (
+                {checkoutSuccess.paymentMethod === 'transferencia' && (
                   <div className="w-full mb-8 p-5 bg-dark border border-gold/15 space-y-3 text-left">
                     <p className="text-[10px] uppercase tracking-widest text-gold/50 mb-3">Datos Bancarios</p>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Banco</span>
-                        <span className="text-white font-medium">{checkoutSuccess.bankDetails.bankName}</span>
+                        <span className="text-white font-medium">{checkoutSuccess.bankDetails?.bankName || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Tipo</span>
-                        <span className="text-white font-medium">{checkoutSuccess.bankDetails.accountType}</span>
+                        <span className="text-white font-medium">{checkoutSuccess.bankDetails?.accountType || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Número</span>
-                        <span className="text-white font-medium">{checkoutSuccess.bankDetails.accountNumber}</span>
+                        <span className="text-white font-medium">{checkoutSuccess.bankDetails?.accountNumber || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-gold/10 pt-2 mt-2">
                         <span className="text-gray-500">Alias</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-gold font-bold">{checkoutSuccess.bankDetails.alias}</span>
-                          <button
-                            onClick={handleCopyAlias}
-                            className="text-gold hover:text-gold-light transition-colors p-1"
-                            title="Copiar alias"
-                          >
-                            {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
-                          </button>
+                          <span className="text-gold font-bold">{checkoutSuccess.bankDetails?.alias || 'N/A'}</span>
+                          {checkoutSuccess.bankDetails?.alias && (
+                            <button
+                              onClick={handleCopyAlias}
+                              className="text-gold hover:text-gold-light transition-colors p-1"
+                              title="Copiar alias"
+                            >
+                              {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">CUIT</span>
-                        <span className="text-white font-medium">{checkoutSuccess.bankDetails.cuit}</span>
+                        <span className="text-white font-medium">{checkoutSuccess.bankDetails?.cuit || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Titular</span>
-                        <span className="text-white font-medium">{checkoutSuccess.bankDetails.holderName}</span>
+                        <span className="text-white font-medium">{checkoutSuccess.bankDetails?.holderName || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
