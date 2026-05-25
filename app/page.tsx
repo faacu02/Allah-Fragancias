@@ -24,7 +24,7 @@ export default function Home() {
   const [isProcessingCart, setIsProcessingCart] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [checkoutSuccess, setCheckoutSuccess] = useState<{ orderId: string; paymentMethod: string } | null>(null);
+  const [checkoutSuccess, setCheckoutSuccess] = useState<{ orderId: string; paymentMethod: string; bankDetails?: any } | null>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetToken, setResetToken] = useState('');
   const [resetPassword, setResetPassword] = useState('');
@@ -144,7 +144,7 @@ export default function Home() {
        
        if (!res.ok) throw new Error(data.error);
 
-       setCheckoutSuccess({ orderId: data.orderId, paymentMethod: method });
+       setCheckoutSuccess({ orderId: data.orderId, paymentMethod: method, bankDetails: data.bankDetails });
        setCartItems([]);
      } catch (e: any) {
         console.error("Error al procesar compra", e);
