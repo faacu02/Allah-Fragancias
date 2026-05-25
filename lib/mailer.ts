@@ -8,6 +8,45 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
+export const sendPasswordResetEmail = async (toEmail: string, token: string) => {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn("Correo no enviado: Credenciales SMTP faltantes");
+    return false;
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const resetUrl = `${baseUrl}/?reset-token=${token}`;
+
+  try {
+    await transporter.sendMail({
+      from: `"Allah Fragancias" <${process.env.SMTP_USER}>`,
+      to: toEmail,
+      subject: 'Allah Fragancias - Restablecer Contraseña',
+      html: `
+        <div style="background-color: #0d0d0d; padding: 40px 20px; font-family: sans-serif; color: #fff;">
+          <div style="max-width: 500px; margin: 0 auto; border: 1px solid rgba(212, 175, 55, 0.3); background-color: #000; padding: 40px;">
+            <h1 style="color: #d4af37; font-family: serif; text-align: center; letter-spacing: 4px; text-transform: uppercase; font-size: 20px; margin-bottom: 30px;">
+              Allah Fragancias
+            </h1>
+            <p style="color: #aaa; font-size: 14px; line-height: 1.6;">Recibiste este correo porque solicitaste restablecer tu contraseña.</p>
+            <div style="text-align: center; margin: 40px 0;">
+              <a href="${resetUrl}" style="background-color: #d4af37; color: #000; padding: 14px 32px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; display: inline-block;">
+                Restablecer Contraseña
+              </a>
+            </div>
+            <p style="color: #666; font-size: 12px;">Si no solicitaste esto, ignorá este correo. El enlace expira en 1 hora.</p>
+          </div>
+        </div>
+      `
+    });
+    console.log("Correo de restablecimiento enviado a:", toEmail);
+    return true;
+  } catch (err) {
+    console.error("Error enviando correo de restablecimiento:", err);
+    return false;
+  }
+};
+
 interface OrderContext {
   orderId: string;
   userName: string;

@@ -8,28 +8,31 @@ datasource db {
 }
 
 model Product {
-  id         String   @id @default(cuid())
-  name       String
-  collection String
-  price      Float
-  stock      Int
-  status     String   @default("OK") // "OK" | "LOW"
-  images     String[] @default([])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  orderItems OrderItem[]
+  id          String   @id @default(cuid())
+  name        String
+  collection  String
+  price       Float
+  stock       Int
+  status      String   @default("OK") // "OK" | "LOW"
+  description String?
+  images      String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String?
-  phone     String?
-  role      String   @default("cliente") // "admin" o "cliente"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+  id               String    @id @default(cuid())
+  email            String    @unique
+  password         String
+  name             String?
+  phone            String?
+  role             String    @default("cliente") // "admin" o "cliente"
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  orders           Order[]
 }
 
 model Order {

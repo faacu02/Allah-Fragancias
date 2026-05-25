@@ -30,9 +30,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       const price = formData.get('price') as string | null;
       const stock = formData.get('stock') as string | null;
 
+      const description = formData.get('description') as string | null;
       if (name) updateData.name = name;
       if (collection) updateData.collection = collection;
       if (price) updateData.price = parseFloat(price);
+      if (description !== null && description !== undefined) updateData.description = description || null;
       if (stock !== null && stock !== undefined) {
         updateData.stock = parseInt(stock, 10);
         updateData.status = updateData.stock < 10 ? 'LOW' : 'OK';

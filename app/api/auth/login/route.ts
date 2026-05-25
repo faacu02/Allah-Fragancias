@@ -2,11 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken, setTokenCookie } from '@/lib/auth';
+import validator from 'validator';
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
-    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json({ error: 'El email es requerido' }, { status: 400 });
+    }
+    if (!password || typeof password !== 'string') {
+      return NextResponse.json({ error: 'La contraseña es requerida' }, { status: 400 });
+    }
+
+    const sanitizedEmail = validator.normalizeEmail(validator.trim(email)) as string;
+    if (!validator.isEmail(sanitizedEmail)) {
+      return NextResponse.json({ error: 'Email inválido' }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
     
     if (!user) return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
 
@@ -16,7 +30,6 @@ export async function POST(request: NextRequest) {
     const token = signToken({ id: user.id, email: user.email, role: user.role });
     const userResponse = { id: user.id, email: user.email, name: user.name, phone: user.phone, role: user.role };
     
-    // Set cookie and return user data (without token)
     const res = NextResponse.json({ user: userResponse });
     setTokenCookie(res, token);
     return res;
