@@ -1,11 +1,13 @@
 'use client';
 
+import { Eye } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 export default function OrdersTab() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
+  const [previewReceipt, setPreviewReceipt] = useState<string | null>(null);
 
    const fetchOrders = async () => {
      setLoadingOrders(true);
@@ -82,7 +84,7 @@ export default function OrdersTab() {
                       </div>
                    </div>
 
-                   <div className="mt-6 border-t border-gold/10 pt-4">
+                    <div className="mt-6 border-t border-gold/10 pt-4">
                       <h5 className="text-[10px] uppercase tracking-widest text-gold/70 mb-3">Artículos</h5>
                       <ul className="space-y-2">
                          {order.items.map((item: any) => (
@@ -92,9 +94,22 @@ export default function OrdersTab() {
                             </li>
                          ))}
                       </ul>
-                   </div>
+                    </div>
 
-                   {order.status === 'pending' && order.paymentMethod === 'efectivo' && (
+                    {order.paymentReceipt && (
+                      <div className="mt-4 border-t border-gold/10 pt-4">
+                        <h5 className="text-[10px] uppercase tracking-widest text-gold/70 mb-3">Comprobante de Transferencia</h5>
+                        <button
+                          onClick={() => setPreviewReceipt(order.paymentReceipt)}
+                          className="flex items-center gap-2 text-gold text-xs hover:text-gold-light transition-colors"
+                        >
+                          <Eye size={16} />
+                          Ver comprobante
+                        </button>
+                      </div>
+                    )}
+
+                    {order.status === 'pending' && (
                       <div className="mt-6 pt-4 border-t border-gold/20 flex justify-end">
                          <button 
                             onClick={() => handleApproveOrder(order.id)}
@@ -103,11 +118,25 @@ export default function OrdersTab() {
                             Marcar Pago Recibido
                          </button>
                       </div>
-                   )}
+                    )}
+                 </div>
+              ))}
+
+              {/* Receipt preview modal */}
+              {previewReceipt && (
+                <div
+                  className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-4 cursor-pointer"
+                  onClick={() => setPreviewReceipt(null)}
+                >
+                  <img
+                    src={previewReceipt}
+                    alt="Comprobante"
+                    className="max-w-full max-h-full object-contain"
+                  />
                 </div>
-             ))}
-          </div>
-       )}
+              )}
+           </div>
+        )}
     </section>
   );
 }

@@ -36,15 +36,16 @@ model User {
 }
 
 model Order {
-  id            String   @id @default(cuid())
-  userId        String?
-  user          User?    @relation(fields: [userId], references: [id])
-  total         Float
-  paymentMethod String   // "efectivo" | "transferencia"
-  status        String   @default("pending") // "pending" | "approved" | "cancelled"
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  items         OrderItem[]
+  id             String      @id @default(cuid())
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id])
+  total          Float
+  paymentMethod  String      // "efectivo" | "transferencia"
+  status         String      @default("pending") // "pending" | "approved" | "cancelled"
+  paymentReceipt String?     // Cloudinary URL of the transfer receipt image
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  items          OrderItem[]
 }
 
 model OrderItem {
