@@ -26,7 +26,7 @@ export default function ProductCard({ product, onClick, onAddToCart }: ProductPr
       <div className="flex justify-between items-start mb-6">
         <div className="cursor-pointer" onClick={onClick}>
           <h3 className="font-serif text-xl text-gold mb-2">{product.name}</h3>
-          <p className="text-xs text-gray-500 uppercase tracking-widest truncate max-w-[200px]">{product.collection}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-widest truncate max-w-[120px] md:max-w-[200px]">{product.collection}</p>
         </div>
         <span className="text-gold-light font-bold tracking-tighter text-lg whitespace-nowrap ml-4">
           ${product.price.toFixed(2)}

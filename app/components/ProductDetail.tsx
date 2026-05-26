@@ -42,13 +42,13 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
                 <>
                   <button
                     onClick={() => setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 border border-gold/30 text-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gold hover:text-dark"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 border border-gold/30 text-gold flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-gold hover:text-dark"
                   >
                     <ChevronLeft size={20} />
                   </button>
                   <button
                     onClick={() => setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 border border-gold/30 text-gold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gold hover:text-dark"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 border border-gold/30 text-gold flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-gold hover:text-dark"
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -76,7 +76,7 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
               <span>/</span>
               <span className="text-gold">{product.collection}</span>
             </nav>
-            <h1 className="text-5xl md:text-7xl font-serif font-bold text-gold tracking-tighter mb-4 leading-none">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-serif font-bold text-gold tracking-tighter mb-4 leading-none">
               {product.name}
             </h1>
             <div className="flex items-baseline gap-4 mb-10">

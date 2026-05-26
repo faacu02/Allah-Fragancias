@@ -282,7 +282,36 @@ export default function InventoryTab() {
         ) : filteredProducts.length === 0 ? (
           <div className="text-gold/50 text-center py-12 text-xs uppercase tracking-widest">No hay perfumes. Añade uno nuevo.</div>
         ) : (
-          <table className="w-full text-left border-collapse min-w-[700px]">
+          <>
+            {/* Mobile card view */}
+            <div className="md:hidden grid grid-cols-1 gap-4">
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="bg-darker border border-gold/15 p-4 flex gap-4 items-start">
+                  <div className="w-16 h-20 bg-dark overflow-hidden flex-none cursor-pointer" onClick={() => openPreview(product)}>
+                    <img
+                      src={product.images?.[0] || "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=400"}
+                      alt="" className="w-full h-full object-cover"
+                      onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=400")}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-gold font-serif text-sm truncate">{product.name}</h4>
+                    <p className="text-[9px] text-gray-500 uppercase tracking-widest truncate">{product.collection}</p>
+                    <div className="flex items-center gap-3 mt-3 text-xs">
+                      <span className="text-white font-mono">${product.price.toFixed(2)}</span>
+                      <span className={`font-bold ${product.stock < 5 ? 'text-red-500' : 'text-white'}`}>{product.stock} uds</span>
+                      <span className={`text-[8px] px-1.5 py-0.5 uppercase font-bold ${product.status === 'LOW' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>{product.status}</span>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button onClick={() => openEditModal(product)} className="flex-1 border border-gold/20 text-gold text-[9px] uppercase tracking-widest font-bold py-2 hover:bg-gold/10 transition-colors">Editar</button>
+                      <button onClick={() => setConfirmDelete({ id: product.id, name: product.name })} className="px-3 border border-red-500/30 text-red-500 text-[9px] uppercase hover:bg-red-500/10 transition-colors"><Trash2 size={14} /></button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop table view */}
+            <table className="w-full text-left border-collapse min-w-[700px] hidden md:table">
             <thead>
               <tr className="border-b border-gold/20 text-[10px] uppercase tracking-widest text-gray-500">
                 <th className="py-3 pr-2 w-12"></th>
@@ -344,7 +373,7 @@ export default function InventoryTab() {
                     </span>
                   </td>
                   <td className="py-2 px-2">
-                    <div className="flex gap-1 opacity-30 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 md:opacity-30 md:group-hover:opacity-100 transition-opacity">
                       <button onClick={() => openEditModal(product)} className="p-1.5 border border-gold/20 text-gold hover:bg-gold/10 transition-all" title="Editar">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       </button>
@@ -357,6 +386,7 @@ export default function InventoryTab() {
               ))}
             </tbody>
           </table>
+          </>
         )}
       </section>
 

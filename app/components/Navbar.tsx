@@ -25,7 +25,7 @@ export default function Navbar({ onRegisterClick, user, onLogout, cartCount = 0,
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="font-serif text-lg md:text-2xl font-bold tracking-[0.2em] text-gold uppercase text-center absolute left-1/2 -translate-x-1/2"
+        className="font-serif text-sm md:text-lg lg:text-2xl font-bold tracking-wider md:tracking-[0.2em] text-gold uppercase text-center absolute left-1/2 -translate-x-1/2 whitespace-nowrap"
       >
         ALLAH FRAGANCIAS
       </motion.div>

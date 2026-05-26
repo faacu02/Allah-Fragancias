@@ -63,7 +63,7 @@ export default function Hero({ onExploreClick }: HeroProps) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="font-serif text-6xl md:text-8xl text-gold-light leading-tight mb-4 tracking-tighter"
+          className="font-serif text-4xl sm:text-6xl md:text-8xl text-gold-light leading-tight mb-4 tracking-tighter"
         >
           Esencias del <br/>
           <span className="italic font-light">Desierto</span>

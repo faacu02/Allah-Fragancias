@@ -196,7 +196,7 @@ export default function Home() {
                     <div className="absolute -top-10 -left-10 w-40 h-40 border border-gold/10 -z-10"></div>
                     <img 
                       alt="Heritage" 
-                      className="w-full h-[600px] object-cover grayscale contrast-125"
+                      className="w-full h-64 md:h-[600px] object-cover grayscale contrast-125"
                       referrerPolicy="no-referrer"
                       src="https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&q=80&w=800" 
                     />
@@ -290,7 +290,7 @@ export default function Home() {
               animate={{ x: 0 }}
               exit={{ x: -320 }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="absolute left-0 top-0 h-full w-80 bg-darker border-r border-gold/15 p-8 flex flex-col"
+              className="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-darker border-r border-gold/15 p-8 flex flex-col"
             >
               <div className="flex justify-between items-center mb-12">
                 <span className="text-gold font-serif text-xl tracking-[0.2em] uppercase">Allah</span>

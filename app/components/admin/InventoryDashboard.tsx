@@ -50,7 +50,9 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
             <button onClick={onBack} className="text-gold hover:text-gold-light transition-colors cursor-pointer">
               <ArrowLeft size={24} />
             </button>
-            <h2 className="font-serif text-gold uppercase tracking-tighter text-xl">Panel de Control</h2>
+            <h2 className="font-serif text-gold uppercase tracking-tighter text-lg md:text-xl">
+              Panel de Control <span className="text-gold/50 text-[10px] tracking-widest">{activeTab === 'inventory' ? '· Inventario' : '· Órdenes'}</span>
+            </h2>
           </div>
         </header>
 
@@ -60,6 +62,24 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
             <OrdersTab />
          )}
       </main>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-darker border-t border-gold/15 flex">
+        <button
+          onClick={() => setActiveTab('inventory')}
+          className={`flex-1 flex flex-col items-center gap-1 py-3 text-[9px] uppercase tracking-widest transition-colors ${activeTab === 'inventory' ? 'text-gold' : 'text-gray-600'}`}
+        >
+          <Package size={18} />
+          Inventario
+        </button>
+        <button
+          onClick={() => setActiveTab('orders')}
+          className={`flex-1 flex flex-col items-center gap-1 py-3 text-[9px] uppercase tracking-widest transition-colors ${activeTab === 'orders' ? 'text-gold' : 'text-gray-600'}`}
+        >
+          <FileText size={18} />
+          Órdenes
+        </button>
+      </nav>
     </div>
   );
 }
