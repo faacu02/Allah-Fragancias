@@ -11,7 +11,29 @@ export async function POST(request: NextRequest) {
     }
 
     const total = items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
-    
+
+    // Validate stock for all items before creating order
+    const productIds = items.map((i: any) => i.productId);
+    const dbProducts = await prisma.product.findMany({
+      where: { id: { in: productIds } }
+    });
+
+    const stockErrors: string[] = [];
+    for (const item of items) {
+      const dbProduct = dbProducts.find(p => p.id === item.productId);
+      if (!dbProduct) {
+        stockErrors.push(`Producto ${item.title || item.productId} no encontrado`);
+      } else if (dbProduct.stock < item.quantity) {
+        stockErrors.push(`${dbProduct.name} tiene solo ${dbProduct.stock} unidades (pediste ${item.quantity})`);
+      }
+    }
+
+    if (stockErrors.length > 0) {
+      return NextResponse.json({
+        error: 'Stock insuficiente: ' + stockErrors.join('. ')
+      }, { status: 409 });
+    }
+
     const orderData: any = {
        total,
        paymentMethod,

@@ -34,13 +34,23 @@ export default function ProductCard({ product, onClick, onAddToCart }: ProductPr
       </div>
       
       <div className="mt-auto">
-         <button 
-           onClick={(e) => { e.stopPropagation(); onAddToCart?.(); }}
-           className="w-full py-4 border border-gold/20 flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-gold hover:bg-gold hover:text-dark transition-colors duration-300"
-         >
-             <ShoppingBag size={16} />
-             Añadir al Carrito
-         </button>
+         {product.stock <= 0 ? (
+           <div className="w-full py-4 border border-red-500/20 bg-red-500/5 flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-red-500">
+             Sin Stock
+           </div>
+         ) : product.stock <= 5 ? (
+           <div className="w-full py-4 border border-gold/20 flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-gold/50">
+             Últimas {product.stock} uds
+           </div>
+         ) : (
+           <button 
+             onClick={(e) => { e.stopPropagation(); onAddToCart?.(); }}
+             className="w-full py-4 border border-gold/20 flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-gold hover:bg-gold hover:text-dark transition-colors duration-300"
+           >
+               <ShoppingBag size={16} />
+               Añadir al Carrito
+           </button>
+         )}
       </div>
     </motion.div>
   );

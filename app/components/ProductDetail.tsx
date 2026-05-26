@@ -95,13 +95,19 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
 
             <div className="space-y-8 max-w-md">
               <div className="flex flex-col gap-4">
-                <button
-                  onClick={() => onAddToCart(product)}
-                  className="w-full py-5 bg-gold text-dark font-bold uppercase tracking-[0.2em] hover:bg-gold-light transition-all duration-500 flex items-center justify-center gap-3"
-                >
-                  <ShoppingBag size={18} />
-                  Añadir al Carrito
-                </button>
+                {product.stock <= 0 ? (
+                  <div className="w-full py-5 border border-red-500/20 bg-red-500/5 text-red-500 font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-3 text-sm">
+                    Sin Stock
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => onAddToCart(product)}
+                    className="w-full py-5 bg-gold text-dark font-bold uppercase tracking-[0.2em] hover:bg-gold-light transition-all duration-500 flex items-center justify-center gap-3"
+                  >
+                    <ShoppingBag size={18} />
+                    Añadir al Carrito
+                  </button>
+                )}
               </div>
             </div>
           </div>

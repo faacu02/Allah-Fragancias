@@ -112,6 +112,10 @@ export default function Home() {
        toast.error("Las cuentas administrativas no pueden utilizar el carrito de compras.");
        return;
     }
+    if (product.stock <= 0) {
+       toast.error("Este producto no tiene stock disponible.");
+       return;
+    }
     setCartItems(prev => {
        const exists = prev.find(i => i.productId === product.id);
        if (exists) {
@@ -306,7 +310,7 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 h-full">
                   <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gold/10">
                     <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center">
                       <User size={18} className="text-gold" />
@@ -336,6 +340,15 @@ export default function Home() {
                       Mis Órdenes
                     </button>
                   )}
+
+                  <div className="mt-auto pt-6 border-t border-gold/10">
+                    <button
+                      onClick={() => { setIsMenuOpen(false); handleLogout(); }}
+                      className="flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-colors w-full"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </div>
                 </div>
               )}
             </motion.aside>
