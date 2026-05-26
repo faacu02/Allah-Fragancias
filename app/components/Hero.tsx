@@ -31,7 +31,7 @@ export default function Hero({ onExploreClick }: HeroProps) {
           <img
             key={idx}
             alt="Luxury Perfume"
-            className={`absolute inset-0 w-full h-full object-cover opacity-60 scale-105 transition-opacity duration-1000 ${idx === currentIndex ? 'opacity-60' : 'opacity-0'}`}
+            className={`absolute inset-0 w-full h-full object-cover scale-105 transition-opacity duration-1000 ${idx === currentIndex ? 'opacity-60' : 'opacity-0 pointer-events-none'}`}
             referrerPolicy="no-referrer"
             src={src}
           />
