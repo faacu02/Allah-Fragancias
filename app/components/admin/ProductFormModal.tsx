@@ -67,7 +67,7 @@ export default function ProductFormModal({ isOpen, editingId, initialData, onClo
       setNewImageFiles([]);
       setIsDragOver(false);
     }
-  }, [isOpen, editingId]);
+  }, [isOpen, editingId, initialData]);
 
   if (!isOpen) return null;
 
