@@ -118,6 +118,11 @@ export default function Home() {
     }
     setCartItems(prev => {
        const exists = prev.find(i => i.productId === product.id);
+       const currentQty = exists?.quantity || 0;
+       if (currentQty >= product.stock) {
+         toast.error(`Solo hay ${product.stock} unidades disponibles.`);
+         return prev;
+       }
        if (exists) {
          return prev.map(i => i.productId === product.id ? { ...i, quantity: i.quantity + 1 } : i);
        }
@@ -140,8 +145,7 @@ export default function Home() {
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({
            items: cartItems,
-           paymentMethod: method,
-           userId: user.id
+           paymentMethod: method
          })
        });
        const data = await res.json();
@@ -150,6 +154,7 @@ export default function Home() {
 
        setCheckoutSuccess({ orderId: data.orderId, paymentMethod: method, bankDetails: data.bankDetails });
        setCartItems([]);
+       localStorage.removeItem('mirage_cart');
      } catch (e: any) {
         console.error("Error al procesar compra", e);
         toast.error("Error procesando compra: " + e.message);

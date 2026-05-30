@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
 
+const ALLOWED_UPDATE_FIELDS = ['name', 'collection', 'price', 'stock', 'description', 'status', 'images'];
+
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = verifyAdmin(request);
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
@@ -11,17 +13,24 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const contentType = request.headers.get('content-type') || '';
     
-    let updateData: any = {};
+    let updateData: Record<string, any> = {};
     
     if (contentType.includes('application/json')) {
       const data = await request.json();
-      updateData = { ...data };
-      if (data.stock !== undefined) {
-        updateData.stock = parseInt(data.stock, 10);
+      // Whitelist allowed fields only
+      for (const key of ALLOWED_UPDATE_FIELDS) {
+        if (data[key] !== undefined) {
+          updateData[key] = data[key];
+        }
+      }
+      if (updateData.stock !== undefined) {
+        updateData.stock = parseInt(updateData.stock, 10);
+        if (isNaN(updateData.stock)) return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
         updateData.status = updateData.stock < 10 ? 'LOW' : 'OK';
       }
-      if (data.price !== undefined) {
-        updateData.price = parseFloat(data.price);
+      if (updateData.price !== undefined) {
+        updateData.price = parseFloat(updateData.price);
+        if (isNaN(updateData.price)) return NextResponse.json({ error: 'Precio inválido' }, { status: 400 });
       }
     } else {
       const formData = await request.formData();
@@ -29,15 +38,21 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       const collection = formData.get('collection') as string | null;
       const price = formData.get('price') as string | null;
       const stock = formData.get('stock') as string | null;
-
       const description = formData.get('description') as string | null;
+
       if (name) updateData.name = name;
       if (collection) updateData.collection = collection;
-      if (price) updateData.price = parseFloat(price);
+      if (price) {
+        const parsed = parseFloat(price);
+        if (isNaN(parsed)) return NextResponse.json({ error: 'Precio inválido' }, { status: 400 });
+        updateData.price = parsed;
+      }
       if (description !== null && description !== undefined) updateData.description = description || null;
       if (stock !== null && stock !== undefined) {
-        updateData.stock = parseInt(stock, 10);
-        updateData.status = updateData.stock < 10 ? 'LOW' : 'OK';
+        const parsed = parseInt(stock, 10);
+        if (isNaN(parsed)) return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
+        updateData.stock = parsed;
+        updateData.status = parsed < 10 ? 'LOW' : 'OK';
       }
 
       let currentImages: string[] = [];
@@ -46,7 +61,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       const existingImagesRaw = formData.get('existingImages') as string | null;
       if (existingImagesRaw !== null) {
         hasImageUpdates = true;
-        try { currentImages = JSON.parse(existingImagesRaw); } catch (e) {}
+        try { currentImages = JSON.parse(existingImagesRaw); } catch (e) {
+          return NextResponse.json({ error: 'Formato de imágenes existentes inválido' }, { status: 400 });
+        }
       }
 
       const files = formData.getAll('newImages') as File[];
@@ -60,6 +77,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       if (hasImageUpdates) {
         updateData.images = currentImages;
       }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No hay datos para actualizar' }, { status: 400 });
     }
 
     const updatedProduct = await prisma.product.update({

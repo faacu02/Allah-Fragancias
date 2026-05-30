@@ -23,6 +23,28 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!order) return NextResponse.json({ error: 'Orden no encontrada.' }, { status: 404 });
 
+    if (order.status === 'approved') {
+      return NextResponse.json({ error: 'La orden ya fue aprobada.' }, { status: 400 });
+    }
+
+    // Check stock availability before approving
+    const stockErrors: string[] = [];
+    for (const item of order.items) {
+      if (!item.product) {
+        stockErrors.push(`Producto ${item.productId} no encontrado`);
+        continue;
+      }
+      if (item.product.stock < item.quantity) {
+        stockErrors.push(`${item.product.name} tiene solo ${item.product.stock} unidades (necesita ${item.quantity})`);
+      }
+    }
+
+    if (stockErrors.length > 0) {
+      return NextResponse.json({
+        error: 'Stock insuficiente: ' + stockErrors.join('. ')
+      }, { status: 409 });
+    }
+
     // Use a transaction to ensure atomicity of order status update and stock deduction
     const updatedOrder = await prisma.$transaction(async (tx) => {
       // Update order status
@@ -31,20 +53,36 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         data: { status: 'approved' }
       });
 
-      // Update product stock for each item in the order
+      // Update product stock for each item in the order with negative stock guard
       for (const item of order.items) {
-        await tx.product.update({
-          where: { id: item.productId },
+        const result = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            stock: { gte: item.quantity } // Guard: only update if enough stock
+          },
           data: {
-            stock: { decrement: item.quantity },
-            status: item.product.stock - item.quantity < 10 ? 'LOW' : 'OK'
+            stock: { decrement: item.quantity }
           }
         });
+
+        if (result.count === 0) {
+          throw new Error(`Stock insuficiente para ${item.product?.name || item.productId}`);
+        }
+
+        // Update LOW status based on new stock
+        const product = await tx.product.findUnique({ where: { id: item.productId } });
+        if (product) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { status: product.stock < 10 ? 'LOW' : 'OK' }
+          });
+        }
       }
 
       return updatedOrder;
     });
 
+    // Send emails (best effort, outside transaction)
     const context = {
        orderId: order.id,
        userName: order.user?.name || 'Cliente',
@@ -58,13 +96,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           price: item.price
        }))
     };
-    
+
     if (order.user?.email) {
-       await sendOrderEmail(order.user.email, context, true);
+      try {
+        await sendOrderEmail(order.user.email, context, true);
+      } catch (e) {
+        console.error('Error enviando email al usuario:', e);
+      }
     }
-    const adminUser = await prisma.user.findFirst({ where: { role: 'admin' } });
-    if (adminUser) {
-       await sendAdminNotificationEmail(adminUser.email, context, true);
+
+    try {
+      const adminUser = await prisma.user.findFirst({ where: { role: 'admin' } });
+      if (adminUser) {
+        await sendAdminNotificationEmail(adminUser.email, context, true);
+      }
+    } catch (e) {
+      console.error('Error enviando email al admin:', e);
     }
 
     return NextResponse.json(updatedOrder);
