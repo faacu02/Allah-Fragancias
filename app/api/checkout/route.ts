@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth';
 import { sendOrderEmail, sendAdminNotificationEmail } from '@/lib/mailer';
+import { checkoutRatelimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    if (checkoutRatelimit) {
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+      const { success } = await checkoutRatelimit.limit(ip);
+      if (!success) {
+        return NextResponse.json({ error: 'Demasiadas solicitudes. Intente de nuevo en un momento.' }, { status: 429 });
+      }
+    }
+
     const { items, paymentMethod } = await request.json();
 
     if (!items || items.length === 0) {

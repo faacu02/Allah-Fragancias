@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import validator from 'validator';
 
 export async function POST(request: NextRequest) {
@@ -20,8 +21,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres' }, { status: 400 });
     }
 
+    // Hash the incoming token to compare against stored hash
+    const hashedToken = crypto.createHash('sha256').update(sanitizedToken).digest('hex');
+
     const user = await prisma.user.findUnique({
-      where: { resetToken: sanitizedToken }
+      where: { resetToken: hashedToken }
     });
 
     if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {

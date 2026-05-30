@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'El email no es válido' }, { status: 400 });
     }
     
-    const sanitizedName = validator.escape(validator.trim(name || ''));
+    const sanitizedName = validator.trim(name || '');
     if (!sanitizedName) {
       return NextResponse.json({ error: 'El nombre es requerido' }, { status: 400 });
     }
@@ -29,20 +29,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'El teléfono debe contener solo números' }, { status: 400 });
     }
 
-    const existing = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
-    if (existing) {
-      return NextResponse.json({ error: 'El correo ya está registrado.' }, { status: 400 });
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: { 
-        email: sanitizedEmail, 
-        password: hashedPassword, 
-        name: sanitizedName, 
-        phone: sanitizedPhone 
+
+    let user;
+    try {
+      user = await prisma.user.create({
+        data: { 
+          email: sanitizedEmail, 
+          password: hashedPassword, 
+          name: sanitizedName, 
+          phone: sanitizedPhone 
+        }
+      });
+    } catch (createError: any) {
+      // Handle P2002 unique constraint violation (race condition on duplicate email)
+      if (createError?.code === 'P2002') {
+        return NextResponse.json({ error: 'Error al registrar. Intente con otro email.' }, { status: 400 });
       }
-    });
+      throw createError;
+    }
 
     // Send welcome email
     try {

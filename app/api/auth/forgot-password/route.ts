@@ -18,12 +18,15 @@ export async function POST(request: NextRequest) {
     if (user) {
       const resetToken = crypto.randomBytes(32).toString('hex');
       const resetTokenExpiry = new Date(Date.now() + 3600000);
+      // Store SHA-256 hash of the token, not the raw token
+      const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
       await prisma.user.update({
         where: { id: user.id },
-        data: { resetToken, resetTokenExpiry }
+        data: { resetToken: hashedToken, resetTokenExpiry }
       });
 
+      // Send the raw token in the email (user never sees the hashed one)
       try {
         await sendPasswordResetEmail(user.email, resetToken);
       } catch (emailError) {
