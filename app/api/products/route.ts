@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       }
       try {
         const uploadPromises = validFiles.map(f => uploadImage(f));
-        const uploadedUrls = await Promise.all(uploadPromises);
+        const uploadedUrls = (await Promise.all(uploadPromises)).filter((x): x is string => x !== null);
         images = [...images, ...uploadedUrls];
       } catch (e) {
         return NextResponse.json({ error: 'Error al subir imágenes' }, { status: 500 });

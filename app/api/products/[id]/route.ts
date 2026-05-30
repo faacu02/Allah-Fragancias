@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
       if (validFiles.length > 0) {
         hasImageUpdates = true;
-        const uploadedUrls = await Promise.all(validFiles.map(f => uploadImage(f)));
+        const uploadedUrls = (await Promise.all(validFiles.map(f => uploadImage(f)))).filter((x): x is string => x !== null);
         currentImages = [...currentImages, ...uploadedUrls];
       }
 
