@@ -1,7 +1,12 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { env } from './env';
 
-export async function uploadImage(file: File): Promise<string> {
+export async function uploadImage(file: File): Promise<string | null> {
+  if (!env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
+    console.warn('Cloudinary not configured — skipping upload');
+    return null;
+  }
+
   cloudinary.config({
     cloud_name: env.CLOUDINARY_CLOUD_NAME,
     api_key: env.CLOUDINARY_API_KEY,
