@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X, ArrowLeft } from 'lucide-react';
+import { useFocusTrap } from '@/lib/useFocusTrap';
+import { csrfFetch } from '@/lib/csrf-client';
 
 interface RegisterProps {
   onClose: () => void;
-  onSuccess: (userData: any) => void;
+  onSuccess: (userData: { id: string; email: string; name: string; phone?: string; role: string }) => void;
 }
 
 export default function Register({ onClose, onSuccess }: RegisterProps) {
@@ -34,7 +36,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
       setError('');
       setLoading(true);
       try {
-        const res = await fetch('/api/auth/forgot-password', {
+        const res = await csrfFetch('/api/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: formData.email })
@@ -65,7 +67,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
 
     try {
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const res = await fetch(endpoint, {
+      const res = await csrfFetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -75,12 +77,14 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
       if (!res.ok) throw new Error(data.error || 'Ocurrió un error');
 
       onSuccess(data.user);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error desconocido');
     } finally {
       setLoading(false);
     }
   };
+
+  const focusRef = useFocusTrap(true);
 
   return (
     <motion.div
@@ -88,9 +92,13 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[100] bg-darker flex flex-col overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Iniciar Sesión / Registrarse"
+      ref={focusRef}
     >
       <nav className="flex justify-between items-center px-8 h-20 border-b border-gold/5">
-        <button onClick={onClose} className="text-gold hover:text-gold-light transition-colors cursor-pointer">
+        <button onClick={onClose} className="text-gold hover:text-gold-light transition-colors cursor-pointer p-2.5">
           <X size={24} />
         </button>
         <div className="font-serif text-xl font-bold tracking-[0.2em] text-gold uppercase">
@@ -136,7 +144,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
               </p>
               <button
                 onClick={() => { setMode('login'); setForgotSent(false); setError(''); }}
-                className="mt-8 text-gold text-xs uppercase tracking-widest hover:underline"
+                className="mt-8 text-gold text-xs uppercase tracking-widest hover:underline px-4 py-3"
               >
                 Volver a Iniciar Sesión
               </button>
@@ -153,7 +161,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                 className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
                 placeholder="Correo Electrónico" required autoComplete="email"
               />
-                  <label htmlFor="forgot-email" className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
+                  <label htmlFor="forgot-email" className="absolute left-0 top-3 text-gray-400 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
                     Correo Electrónico
                   </label>
                 </div>
@@ -168,7 +176,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                           onChange={(e) => setFormData({...formData, name: e.target.value})}
                           className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
                           placeholder="Nombre Completo" required autoComplete="name" />
-                        <label htmlFor="name" className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
+                        <label htmlFor="name" className="absolute left-0 top-3 text-gray-400 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
                           Nombre Completo
                         </label>
                       </div>
@@ -177,7 +185,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                           onChange={(e) => setFormData({...formData, phone: e.target.value})}
                           className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
                           placeholder="Teléfono Celular" autoComplete="tel" />
-                        <label htmlFor="phone" className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
+                        <label htmlFor="phone" className="absolute left-0 top-3 text-gray-400 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
                           Teléfono Celular <span className="text-gray-700 font-normal normal-case">(opcional)</span>
                         </label>
                       </div>
@@ -189,7 +197,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
                       placeholder="Correo Electrónico" required autoComplete="email" />
-                    <label htmlFor="email" className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
+                    <label htmlFor="email" className="absolute left-0 top-3 text-gray-400 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
                       Correo Electrónico
                     </label>
                   </div>
@@ -199,7 +207,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
                       className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
                       placeholder="Contraseña" required autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
-                    <label htmlFor="password" className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
+                    <label htmlFor="password" className="absolute left-0 top-3 text-gray-400 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
                       Contraseña
                     </label>
                   </div>
@@ -216,17 +224,17 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
             {mode === 'forgot' ? (
               <button
                 onClick={() => { setMode('login'); setError(''); }}
-                className="text-gold text-xs uppercase tracking-widest hover:underline"
+                className="text-gold text-xs uppercase tracking-widest hover:underline px-4 py-3"
               >
                 ← Volver a Iniciar Sesión
               </button>
             ) : (
               <>
-                <p className="text-xs text-gray-500 tracking-wider">
+                <p className="text-xs text-gray-400 tracking-wider">
                   {mode === 'login' ? '¿No tiene una cuenta?' : '¿Ya tiene una cuenta?'}
                   <button
                     onClick={() => { setError(''); setMode(mode === 'login' ? 'register' : 'login'); }}
-                    className="text-gold font-bold ml-2 hover:underline underline-offset-4 transition-all uppercase"
+                    className="text-gold font-bold ml-2 hover:underline underline-offset-4 transition-all uppercase px-4 py-3"
                   >
                     {mode === 'login' ? 'Regístrese' : 'Inicie sesión'}
                   </button>
@@ -234,7 +242,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                 {mode === 'login' && (
                   <button
                     onClick={() => { setError(''); setMode('forgot'); }}
-                    className="text-gray-500 text-[10px] uppercase tracking-widest mt-4 hover:text-gold transition-colors"
+                    className="text-gray-400 text-[10px] uppercase tracking-widest mt-4 hover:text-gold transition-colors px-4 py-3"
                   >
                     ¿Olvidó su contraseña?
                   </button>

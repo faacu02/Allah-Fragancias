@@ -2,16 +2,53 @@
 
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import dynamic from 'next/dynamic';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ProductGrid from './components/ProductGrid';
-import Register from './components/Register';
-import ProductDetail from './components/ProductDetail';
-import InventoryDashboard from './components/admin/InventoryDashboard';
-import ClientDashboard from './components/ClientDashboard';
-import CartSidebar, { CartItem } from './components/CartSidebar';
+import Image from 'next/image';
+import { csrfFetch } from '@/lib/csrf-client';
+import { useFocusTrap } from '@/lib/useFocusTrap';
+import { useProducts } from '@/lib/product-context';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Package, FileText, User } from 'lucide-react';
+import type { CartItem } from './components/CartSidebar';
+
+const Register = dynamic(() => import('./components/Register'));
+const ProductDetail = dynamic(() => import('./components/ProductDetail'));
+const InventoryDashboard = dynamic(() => import('./components/admin/InventoryDashboard'));
+const ClientDashboard = dynamic(() => import('./components/ClientDashboard'));
+const CartSidebar = dynamic(() => import('./components/CartSidebar'));
+const ResetPasswordModal = dynamic(() => import('./components/ResetPasswordModal'));
+const ConfirmLogoutModal = dynamic(() => import('./components/ConfirmLogoutModal'));
+
+interface UserData {
+  id: string;
+  email: string;
+  name: string;
+  phone?: string;
+  role: string;
+}
+
+interface ProductData {
+  id: string;
+  name: string;
+  collection: string;
+  price: number;
+  stock: number;
+  status: string;
+  images: string[];
+  description?: string | null;
+}
+
+interface BankDetails {
+  bankName: string;
+  accountType: string;
+  accountNumber: string;
+  alias: string;
+  cuit: string;
+  holderName: string;
+}
 
 type View = 'landing' | 'detail' | 'dashboard' | 'profile';
 
@@ -19,19 +56,17 @@ export default function Home() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [view, setView] = useState<View>('landing');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isProcessingCart, setIsProcessingCart] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductData | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [checkoutSuccess, setCheckoutSuccess] = useState<{ orderId: string; paymentMethod: string; bankDetails?: any } | null>(null);
+  const [checkoutSuccess, setCheckoutSuccess] = useState<{ orderId: string; paymentMethod: string; bankDetails?: BankDetails } | null>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const { products: allProducts } = useProducts();
   const [resetToken, setResetToken] = useState('');
-  const [resetPassword, setResetPassword] = useState('');
-  const [resetError, setResetError] = useState('');
-  const [resetLoading, setResetLoading] = useState(false);
-  const [resetSuccess, setResetSuccess] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const mobileMenuRef = useFocusTrap(isMenuOpen);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -53,38 +88,37 @@ export default function Home() {
       try {
         const parsed = JSON.parse(savedCart);
         setCartItems(parsed); // Show immediately from localStorage
-        if (parsed.length > 0) {
-          // Revalidate stock and prices against DB in background
-          fetch('/api/products').then(res => res.json()).then((allProducts: any[]) => {
-            const productMap = new Map<string, any>(allProducts.map((p: any) => [p.id, p]));
-            setCartItems(prev => {
-              const reconciled = prev
-                .map(item => {
-                  const product = productMap.get(item.productId);
-                  if (!product || product.stock <= 0) return null;
-                  return { ...item, stock: product.stock, price: product.price };
-                })
-                .filter(Boolean);
-              if (reconciled.length !== prev.length) {
-                toast('Algunos productos fueron removidos por falta de stock', { icon: '⚠️' });
-              }
-              return reconciled;
-            });
-          }).catch(() => {});
+        if (parsed.length > 0 && allProducts.length > 0) {
+          const productMap = new Map<string, ProductData>(allProducts.map(p => [p.id, p]));
+          setCartItems(prev => {
+            const reconciled = prev
+              .map(item => {
+                const product = productMap.get(item.productId);
+                if (!product || product.stock <= 0) return null;
+                return { ...item, stock: product.stock, price: product.price };
+              })
+              .filter((x): x is CartItem => x !== null);
+            if (reconciled.length !== prev.length) {
+              toast('Algunos productos fueron removidos por falta de stock', { icon: '⚠️' });
+            }
+            return reconciled;
+          });
         }
       } catch(e) {
         localStorage.removeItem('mirage_cart');
       }
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('reset-token');
+    const hash = window.location.hash;
+    const hashToken = hash.match(/reset-token=([^&]+)/);
+    const token = hashToken ? hashToken[1] : null;
     if (token) {
-      setResetToken(token);
+      setResetToken(decodeURIComponent(token));
       setShowResetPassword(true);
-      window.history.replaceState({}, document.title, "/");
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
 
+    const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
     if (status === 'approved' || status === 'success') {
        toast.success("¡Pago exitoso! Su pedido ha sido procesado.");
@@ -101,9 +135,28 @@ export default function Home() {
     localStorage.setItem('mirage_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
+  useEffect(() => {
+    if (view !== 'landing') {
+      window.history.pushState({ view, scrollY: window.scrollY }, '', '/');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' as ScrollBehavior });
+  }, [view]);
+
+  useEffect(() => {
+    const handlePop = (e: PopStateEvent) => {
+      setView('landing');
+      const state = e.state;
+      if (state?.scrollY && state.scrollY > 0) {
+        requestAnimationFrame(() => window.scrollTo(0, state.scrollY));
+      }
+    };
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, []);
+
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await csrfFetch('/api/auth/logout', { method: 'POST' });
     } catch (e) {
       console.error('Logout failed:', e);
     }
@@ -129,7 +182,7 @@ export default function Home() {
     setView(destination);
   };
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: ProductData) => {
     if (!user) {
        setShowAuthModal(true);
        return;
@@ -168,14 +221,14 @@ export default function Home() {
    const handleCheckout = async (method: 'efectivo' | 'transferencia') => {
      setIsProcessingCart(true);
      try {
-       const res = await fetch('/api/checkout', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-           items: cartItems,
-           paymentMethod: method
-         })
-       });
+        const res = await csrfFetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: cartItems,
+            paymentMethod: method
+          })
+        });
        const data = await res.json();
        
        if (!res.ok) throw new Error(data.error);
@@ -183,9 +236,9 @@ export default function Home() {
        setCheckoutSuccess({ orderId: data.orderId, paymentMethod: method, bankDetails: data.bankDetails });
        setCartItems([]);
        localStorage.removeItem('mirage_cart');
-     } catch (e: any) {
-        console.error("Error al procesar compra", e);
-        toast.error("Error procesando compra: " + e.message);
+      } catch (e: unknown) {
+         console.error("Error al procesar compra", e);
+         toast.error("Error procesando compra: " + (e instanceof Error ? e.message : 'Error desconocido'));
      } finally {
         setIsProcessingCart(false);
      }
@@ -219,7 +272,7 @@ export default function Home() {
             <main>
               <Hero onExploreClick={() => document.getElementById('coleccion')?.scrollIntoView({ behavior: 'smooth' })} />
               
-              <ProductGrid onProductClick={(product) => { setSelectedProduct(product); setView('detail'); }} onAddToCart={handleAddToCart} />
+              <ProductGrid onProductClick={(product: ProductData) => { setSelectedProduct(product); setView('detail'); }} onAddToCart={handleAddToCart} />
 
 
 
@@ -227,12 +280,13 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
                   <div className="relative">
                     <div className="absolute -top-10 -left-10 w-40 h-40 border border-gold/10 -z-10"></div>
-                    <img 
+                    <Image 
                       alt="Heritage" 
                       className="w-full h-64 md:h-[600px] object-cover grayscale contrast-125"
                       loading="lazy"
-                      referrerPolicy="no-referrer"
                       src="https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&q=80&w=800" 
+                      width={800}
+                      height={600}
                     />
                   </div>
                   <div className="space-y-8">
@@ -303,7 +357,7 @@ export default function Home() {
         {showAuthModal && (
           <Register 
              onClose={() => setShowAuthModal(false)} 
-             onSuccess={(userData) => {
+             onSuccess={(userData: UserData) => {
                  setUser(userData);
                  setShowAuthModal(false);
                  toast.success(`Bienvenido, ${userData.name?.split(' ')[0] || 'Miembro'}.`);
@@ -317,9 +371,13 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[200]"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menú de navegación"
           >
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
             <motion.aside
+              ref={mobileMenuRef}
               initial={{ x: -320 }}
               animate={{ x: 0 }}
               exit={{ x: -320 }}
@@ -328,14 +386,14 @@ export default function Home() {
             >
               <div className="flex justify-between items-center mb-12">
                 <span className="text-gold font-serif text-xl tracking-[0.2em] uppercase">Allah</span>
-                <button onClick={() => setIsMenuOpen(false)} className="text-gray-500 hover:text-gold transition-colors" aria-label="Cerrar menú">
+                <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-gold transition-colors" aria-label="Cerrar menú">
                   <X size={20} />
                 </button>
               </div>
 
               {!user ? (
                 <div className="flex flex-col gap-4 mt-8">
-                  <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-4">Bienvenido</p>
+                  <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-4">Bienvenido</p>
                   <button
                     onClick={() => { setIsMenuOpen(false); setShowAuthModal(true); }}
                     className="w-full py-3 border border-gold/20 text-gold text-xs font-bold uppercase tracking-widest hover:bg-gold/10 transition-colors"
@@ -351,11 +409,11 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="text-white text-sm font-serif">{user.name || 'Miembro'}</p>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-widest">{user.role === 'admin' ? 'Administrador' : 'Cliente'}</p>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-widest">{user.role === 'admin' ? 'Administrador' : 'Cliente'}</p>
                     </div>
                   </div>
 
-                  <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2 px-3">Navegación</p>
+                  <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-2 px-3">Navegación</p>
 
                   {user.role === 'admin' ? (
                     <button
@@ -390,101 +448,18 @@ export default function Home() {
         )}
 
         {showResetPassword && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-darker flex flex-col items-center justify-center px-8"
-          >
-            <div className="w-full max-w-md">
-              <div className="font-serif text-xl font-bold tracking-[0.2em] text-gold uppercase text-center mb-10">
-                ALLAH FRAGANCIAS
-              </div>
-              {resetSuccess ? (
-                <div className="text-center">
-                  <p className="text-gold text-sm mb-4">Contraseña actualizada exitosamente</p>
-                  <p className="text-gray-400 text-xs">Ahora podés iniciar sesión con tu nueva contraseña.</p>
-                  <button
-                    onClick={() => { setShowResetPassword(false); setShowAuthModal(true); }}
-                    className="mt-8 text-gold text-xs uppercase tracking-widest hover:underline"
-                  >
-                    Iniciar Sesión
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!resetPassword || resetPassword.length < 6) {
-                    setResetError('La contraseña debe tener al menos 6 caracteres');
-                    return;
-                  }
-                  setResetError('');
-                  setResetLoading(true);
-                  try {
-                    const res = await fetch('/api/auth/reset-password', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ token: resetToken, password: resetPassword })
-                    });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error);
-                    setResetSuccess(true);
-                    toast.success('Contraseña actualizada exitosamente');
-                  } catch (err: any) {
-                    setResetError(err.message);
-                  } finally {
-                    setResetLoading(false);
-                  }
-                }}>
-                  <h2 className="font-serif text-4xl text-gold-light leading-tight tracking-tighter mb-4 text-center">
-                    Nueva Contraseña
-                  </h2>
-                  <p className="text-gray-400 text-sm leading-relaxed tracking-widest uppercase text-center mb-10">
-                    Ingresá tu nueva contraseña
-                  </p>
-                  {resetError && <div className="text-red-500 text-xs text-center border border-red-500/20 py-2 bg-red-500/10 mb-6">{resetError}</div>}
-                  <button
-                    type="button"
-                    onClick={() => { setShowResetPassword(false); setShowAuthModal(true); }}
-                    className="text-gray-500 text-[10px] uppercase tracking-widest hover:text-gold transition-colors mb-6 block"
-                  >
-                    ← Volver a Iniciar Sesión
-                  </button>
-                  <div className="relative group mb-10">
-                    <input
-                      type="password" id="reset-password" value={resetPassword}
-                      onChange={(e) => setResetPassword(e.target.value)}
-                      className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
-                      placeholder="Nueva Contraseña" required
-                    />
-                    <label htmlFor="reset-password" className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
-                      Nueva Contraseña
-                    </label>
-                  </div>
-                  <button disabled={resetLoading} className="w-full bg-gradient-to-r from-gold to-gold-dark text-dark font-bold py-5 tracking-[0.2em] uppercase text-xs hover:opacity-90 active:scale-[0.98] transition-all duration-500 shadow-xl shadow-gold/10">
-                    {resetLoading ? 'CARGANDO...' : 'RESTABLECER CONTRASEÑA'}
-                  </button>
-                </form>
-              )}
-            </div>
-          </motion.div>
+          <ResetPasswordModal
+            token={resetToken}
+            onClose={() => setShowResetPassword(false)}
+            onLoginRedirect={() => { setShowResetPassword(false); setShowAuthModal(true); }}
+          />
         )}
 
         {confirmLogout && (
-          <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-darker border border-gold/20 w-full max-w-sm p-8 relative">
-              <h3 className="font-serif text-xl text-gold mb-4">Cerrar Sesión</h3>
-              <p className="text-gray-400 text-sm mb-6">¿Estás seguro de que querés cerrar sesión?</p>
-              <div className="flex gap-4">
-                <button onClick={() => setConfirmLogout(false)} className="flex-1 border border-gold/20 text-gold text-xs uppercase tracking-widest font-bold py-3 hover:bg-gold/10 transition-colors">
-                  Cancelar
-                </button>
-                <button onClick={() => { setConfirmLogout(false); setIsMenuOpen(false); handleLogout(); }} className="flex-1 bg-red-500/10 border border-red-500 text-red-500 text-xs uppercase tracking-widest font-bold py-3 hover:bg-red-500/20 transition-colors">
-                  Cerrar Sesión
-                </button>
-              </div>
-            </div>
-          </div>
+          <ConfirmLogoutModal
+            onConfirm={() => { setConfirmLogout(false); setIsMenuOpen(false); handleLogout(); }}
+            onCancel={() => setConfirmLogout(false)}
+          />
         )}
       </AnimatePresence>
     </div>

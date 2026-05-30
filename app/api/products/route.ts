@@ -3,6 +3,16 @@ import { prisma } from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
 
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+function validateFile(file: File): string | null {
+  if (file.size <= 0) return null; // skip empty
+  if (file.size > MAX_FILE_SIZE) return `Archivo ${file.name} excede 5MB`;
+  if (!ALLOWED_MIME_TYPES.includes(file.type)) return `Tipo de archivo ${file.type} no soportado (use JPEG, PNG, WebP o AVIF)`;
+  return null;
+}
+
 export async function GET() {
   try {
     const products = await prisma.product.findMany({
@@ -59,8 +69,18 @@ export async function POST(request: NextRequest) {
 
     const files = formData.getAll('newImages') as File[];
     if (files.length > 0) {
+      const errors: string[] = [];
+      const validFiles = files.filter(f => {
+        if (f.size <= 0) return false;
+        const err = validateFile(f);
+        if (err) { errors.push(err); return false; }
+        return true;
+      });
+      if (errors.length > 0) {
+        return NextResponse.json({ error: errors.join('. ') }, { status: 400 });
+      }
       try {
-        const uploadPromises = files.filter(f => f.size > 0).map(f => uploadImage(f));
+        const uploadPromises = validFiles.map(f => uploadImage(f));
         const uploadedUrls = await Promise.all(uploadPromises);
         images = [...images, ...uploadedUrls];
       } catch (e) {

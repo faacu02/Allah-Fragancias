@@ -1,7 +1,9 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Noto_Serif, Manrope } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+import { env } from '@/lib/env';
+import { ProductProvider } from '@/lib/product-context';
 
 const notoSerif = Noto_Serif({
   subsets: ['latin'],
@@ -18,7 +20,10 @@ const manrope = Manrope({
   display: 'swap',
 });
 
+const BASE_URL = env.NEXT_PUBLIC_BASE_URL;
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: {
     default: 'Allah Fragancias — Luxury Perfumery',
     template: '%s | Allah Fragancias',
@@ -26,22 +31,34 @@ export const metadata: Metadata = {
   description: 'Descubra el lujo en cada gota. Colección exclusiva de fragancias orientales de alta perfumería.',
   keywords: ['perfumes', 'fragancias', 'lujo', 'oriente', 'alta perfumería', 'Arabia', 'oud', 'colonia'],
   authors: [{ name: 'Allah Fragancias' }],
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'Allah Fragancias — Luxury Perfumery',
     description: 'Descubra el lujo en cada gota. Colección exclusiva de fragancias orientales de alta perfumería.',
     siteName: 'Allah Fragancias',
     locale: 'es_AR',
     type: 'website',
+    url: '/',
+    images: [{ url: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1200&h=630', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Allah Fragancias — Luxury Perfumery',
     description: 'Descubra el lujo en cada gota. Colección exclusiva de fragancias orientales.',
+    images: ['https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1200&h=630'],
   },
   robots: {
     index: true,
     follow: true,
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#131313',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -55,7 +72,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Saltar al contenido principal
         </a>
         <div id="main-content">
-          {children}
+          <ProductProvider>
+            {children}
+          </ProductProvider>
         </div>
         <script
           type="application/ld+json"

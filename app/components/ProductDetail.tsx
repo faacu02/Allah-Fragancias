@@ -1,19 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
-import { ArrowLeft, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, ChevronLeft, ChevronRight, X } from 'lucide-react';
+
+interface ProductData {
+  id: string;
+  name: string;
+  collection: string;
+  price: number;
+  stock: number;
+  status: string;
+  images: string[];
+  description?: string | null;
+}
 
 interface ProductDetailProps {
-  product: any;
+  product: ProductData;
   onBack: () => void;
-  onAddToCart: (product: any) => void;
+  onAddToCart: (product: ProductData) => void;
 }
 
 export default function ProductDetail({ product, onBack, onAddToCart }: ProductDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const images = product.images?.length > 0 ? product.images : ["https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=1200"];
+
+  const prevImage = useCallback(() => {
+    setCurrentImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
+  }, [images.length]);
+
+  const nextImage = useCallback(() => {
+    setCurrentImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
+  }, [images.length]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (zoomImage && e.key === 'Escape') { setZoomImage(null); return; }
+      if (images.length <= 1) return;
+      if (e.key === 'ArrowLeft') prevImage();
+      if (e.key === 'ArrowRight') nextImage();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [zoomImage, images.length, prevImage, nextImage]);
 
   return (
     <motion.div
@@ -23,7 +54,7 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
       className="min-h-screen bg-dark pt-20 pb-16 md:pb-32"
     >
       <nav className="fixed top-0 w-full z-50 bg-dark/60 backdrop-blur-xl flex justify-between items-center px-8 h-20 border-b border-gold/10">
-        <button onClick={onBack} className="text-gold cursor-pointer hover:text-gold-light transition-colors">
+        <button onClick={onBack} className="text-gold cursor-pointer hover:text-gold-light transition-colors p-2.5">
           <ArrowLeft size={24} />
         </button>
         <div className="font-serif text-xl font-bold tracking-[0.2em] text-gold uppercase">ALLAH FRAGANCIAS</div>
@@ -34,23 +65,25 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
         <div className="flex flex-col md:flex-row gap-6 md:gap-12 mb-16 md:mb-32">
           <div className="w-full md:w-1/2">
             <div className="aspect-[3/4] bg-darker overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(images[currentImageIndex])}>
-              <img
+              <Image
                 src={images[currentImageIndex]}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 loading="lazy"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
               {images.length > 1 && (
                 <>
                   <button
                     onClick={() => setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 border border-gold/30 text-gold flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-gold hover:text-dark"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/60 border border-gold/30 text-gold flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-gold hover:text-dark"
                   >
                     <ChevronLeft size={20} />
                   </button>
                   <button
                     onClick={() => setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 border border-gold/30 text-gold flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-gold hover:text-dark"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/60 border border-gold/30 text-gold flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-gold hover:text-dark"
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -59,13 +92,13 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
             </div>
             {images.length > 1 && (
               <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-                {images.map((img, idx) => (
+                {images.map((img: string, idx: number) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentImageIndex(idx)}
-                    className={`w-16 h-16 flex-none overflow-hidden border-2 transition-colors ${idx === currentImageIndex ? 'border-gold' : 'border-transparent opacity-50 hover:opacity-80'}`}
+                    className={`w-16 h-16 flex-none overflow-hidden border-2 transition-colors relative ${idx === currentImageIndex ? 'border-gold' : 'border-transparent opacity-50 hover:opacity-80'}`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <Image src={img} alt="" fill className="object-cover" loading="lazy" sizes="64px" />
                   </button>
                 ))}
               </div>
@@ -73,7 +106,7 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
           </div>
 
           <div className="w-full md:w-1/2 flex flex-col justify-center">
-            <nav className="flex gap-2 text-[10px] tracking-widest uppercase text-gray-500 mb-8">
+            <nav className="flex gap-2 text-[10px] tracking-widest uppercase text-gray-400 mb-8">
               <span>Colección</span>
               <span>/</span>
               <span className="text-gold">{product.collection}</span>
@@ -118,8 +151,11 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
 
       {/* Zoom modal */}
       {zoomImage && (
-        <div className="fixed inset-0 z-[300] bg-black/90 flex items-center justify-center p-4 cursor-pointer" onClick={() => setZoomImage(null)}>
-          <img src={zoomImage} alt={product.name} className="max-w-full max-h-full object-contain" />
+        <div className="fixed inset-0 z-[300] bg-black/90 flex items-center justify-center p-4 cursor-pointer" onClick={() => setZoomImage(null)} role="dialog" aria-modal="true" aria-label="Vista ampliada de la imagen">
+          <button onClick={() => setZoomImage(null)} className="absolute top-6 right-6 text-white hover:text-gold transition-colors p-2.5 z-10">
+            <X size={28} />
+          </button>
+          <Image src={zoomImage} alt={product.name} width={1200} height={1600} className="max-w-full max-h-full object-contain" />
         </div>
       )}
     </motion.div>

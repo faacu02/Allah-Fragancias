@@ -4,6 +4,15 @@ import { verifyAdmin } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
 
 const ALLOWED_UPDATE_FIELDS = ['name', 'collection', 'price', 'stock', 'description', 'status', 'images'];
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+function validateFile(file: File): string | null {
+  if (file.size <= 0) return null;
+  if (file.size > MAX_FILE_SIZE) return `Archivo ${file.name} excede 5MB`;
+  if (!ALLOWED_MIME_TYPES.includes(file.type)) return `Tipo de archivo ${file.type} no soportado`;
+  return null;
+}
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = verifyAdmin(request);
@@ -67,7 +76,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
 
       const files = formData.getAll('newImages') as File[];
-      const validFiles = files.filter(f => f.size > 0);
+      const errors: string[] = [];
+      const validFiles = files.filter(f => {
+        if (f.size <= 0) return false;
+        const err = validateFile(f);
+        if (err) { errors.push(err); return false; }
+        return true;
+      });
+      if (errors.length > 0) {
+        return NextResponse.json({ error: errors.join('. ') }, { status: 400 });
+      }
       if (validFiles.length > 0) {
         hasImageUpdates = true;
         const uploadedUrls = await Promise.all(validFiles.map(f => uploadImage(f)));

@@ -1,11 +1,20 @@
 'use client';
 
+import { memo } from 'react';
 import { ShoppingBag, Menu } from 'lucide-react';
 import { motion } from 'motion/react';
 
+interface UserData {
+  id: string;
+  email: string;
+  name: string;
+  phone?: string;
+  role: string;
+}
+
 interface NavbarProps {
   onRegisterClick: () => void;
-  user?: any;
+  user?: UserData | null;
   onLogout?: () => void;
   cartCount?: number;
   onCartClick?: () => void;
@@ -13,7 +22,7 @@ interface NavbarProps {
   onMenuClick?: () => void;
 }
 
-export default function Navbar({ onRegisterClick, user, onLogout, cartCount = 0, onCartClick, onProfileClick, onMenuClick }: NavbarProps) {
+function Navbar({ onRegisterClick, user, onLogout, cartCount = 0, onCartClick, onProfileClick, onMenuClick }: NavbarProps) {
   return (
     <nav className="fixed top-0 w-full z-50 bg-dark/60 backdrop-blur-xl flex justify-between items-center px-4 md:px-8 h-20 border-b border-gold/10">
       <div className="flex items-center gap-4">
@@ -42,7 +51,7 @@ export default function Navbar({ onRegisterClick, user, onLogout, cartCount = 0,
             </button>
             <button 
               onClick={onLogout}
-              className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-red-500 transition-colors cursor-pointer border border-transparent hover:border-red-500/30 px-3 py-1"
+              className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-red-500 transition-colors cursor-pointer border border-transparent hover:border-red-500/30 px-3 py-1"
               aria-label="Cerrar sesión"
             >
                 SALIR
@@ -72,3 +81,5 @@ export default function Navbar({ onRegisterClick, user, onLogout, cartCount = 0,
     </nav>
   );
 }
+
+export default memo(Navbar);

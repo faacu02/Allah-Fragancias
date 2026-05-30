@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 
 const carouselImages = [
@@ -16,38 +17,78 @@ interface HeroProps {
 
 export default function Hero({ onExploreClick }: HeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
+    if (isPaused) return;
     const interval = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % carouselImages.length);
     }, 5000);
     return () => clearInterval(interval);
+  }, [isPaused]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        setCurrentIndex(prev => (prev === 0 ? carouselImages.length - 1 : prev - 1));
+        setIsPaused(true);
+      } else if (e.key === 'ArrowRight') {
+        setCurrentIndex(prev => (prev + 1) % carouselImages.length);
+        setIsPaused(true);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
+  const visibleIndices = (() => {
+    const prev = currentIndex === 0 ? carouselImages.length - 1 : currentIndex - 1;
+    const next = (currentIndex + 1) % carouselImages.length;
+    return new Set([prev, currentIndex, next]);
+  })();
+
   return (
-    <section className="relative min-h-[500px] h-screen flex items-center overflow-hidden">
+    <section
+      className="relative min-h-[500px] h-screen flex items-center overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      aria-roledescription="carrusel"
+      aria-label="Galería de fragancias"
+    >
       <div className="absolute inset-0 z-0">
-        {carouselImages.map((src, idx) => (
-          <img
+        {carouselImages.map((src, idx) => visibleIndices.has(idx) ? (
+          <Image
             key={idx}
-            alt="Luxury Perfume"
-            className={`absolute inset-0 w-full h-full object-cover scale-105 transition-opacity duration-1000 ${idx === currentIndex ? 'opacity-60' : 'opacity-0 pointer-events-none'}`}
-            loading={idx === 0 ? 'eager' : 'lazy'}
-            referrerPolicy="no-referrer"
             src={src}
+            alt=""
+            fill
+            className={`object-cover scale-105 transition-opacity duration-1000 ${idx === currentIndex ? 'opacity-60' : 'opacity-0 pointer-events-none'}`}
+            priority={idx === 0}
+            sizes="100vw"
           />
-        ))}
+        ) : null)}
         <div className="absolute inset-0 bg-gradient-to-r from-dark via-transparent to-transparent"></div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3 items-center">
         {carouselImages.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-gold w-7' : 'bg-white/40 hover:bg-white/70'}`}
-          />
+            className={`w-11 h-11 rounded-full transition-all duration-300 flex items-center justify-center ${idx === currentIndex ? 'bg-gold' : 'bg-white/40 hover:bg-white/70'}`}
+            aria-label={`Ir a imagen ${idx + 1}`}
+            aria-current={idx === currentIndex ? 'true' : undefined}
+          >
+            <span className={`block w-3 h-3 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-dark' : ''}`} />
+          </button>
         ))}
+        <button
+          onClick={() => setIsPaused(p => !p)}
+          className="ml-4 px-3 py-3 border border-gold/30 text-gold text-[10px] uppercase tracking-widest hover:bg-gold/10 transition-colors"
+          aria-label={isPaused ? 'Reanudar carrusel' : 'Pausar carrusel'}
+        >
+          {isPaused ? '▶' : '❚❚'}
+        </button>
       </div>
 
       <div className="relative z-10 px-8 md:px-24 max-w-4xl">

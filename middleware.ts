@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyAuth } from './lib/auth';
 import { authRatelimit, apiRatelimit } from './lib/rate-limit';
+import { generateCsrfToken, getCsrfCookieName, validateCsrfToken } from './lib/csrf';
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
@@ -9,8 +10,12 @@ const securityHeaders = [
   { key: 'X-XSS-Protection', value: '1; mode=block' },
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' }
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  {
+    key: 'Content-Security-Policy',
+    value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com; font-src 'self' data:; connect-src 'self' https://api.unsplash.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+  }
 ];
 
 function addSecurityHeaders(response: NextResponse) {
@@ -31,10 +36,33 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon.ico')
   ) {
-    return addSecurityHeaders(NextResponse.next());
+  const response = NextResponse.next();
+  addSecurityHeaders(response);
+
+  // Set CSRF cookie if not present
+  if (!request.cookies.get(getCsrfCookieName())) {
+    const token = generateCsrfToken();
+    response.cookies.set(getCsrfCookieName(), token, {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24,
+    });
+  }
+
+  return response;
   }
 
   if (pathname.startsWith('/api/')) {
+    // CSRF validation for state-changing API methods
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      const csrfCookie = request.cookies.get(getCsrfCookieName())?.value || null;
+      const csrfHeader = request.headers.get('x-csrf-token');
+      if (!validateCsrfToken(csrfHeader, csrfCookie)) {
+        return NextResponse.json({ error: 'CSRF token inválido' }, { status: 403 });
+      }
+    }
+
     const ip = getClientIp(request);
     let ratelimit = apiRatelimit;
 

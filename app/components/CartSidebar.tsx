@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import NextImage from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trash2, ShoppingBag, Banknote, CheckCircle, Copy, Check, Upload, Image, Loader } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Banknote, CheckCircle, Copy, Check, Upload, Image as ImageIcon, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useFocusTrap } from '@/lib/useFocusTrap';
+import { csrfFetch } from '@/lib/csrf-client';
 
 export interface CartItem {
   productId: string;
@@ -22,7 +25,7 @@ interface CartSidebarProps {
   onUpdateQuantity: (id: string, qty: number) => void;
   onCheckout: (method: 'efectivo' | 'transferencia') => void;
   isProcessing: boolean;
-  checkoutSuccess: { orderId: string; paymentMethod: string; bankDetails?: any } | null;
+  checkoutSuccess: { orderId: string; paymentMethod: string; bankDetails?: { bankName: string; accountType: string; accountNumber: string; alias: string; cuit: string; holderName: string } } | null;
 }
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5491123456789';
@@ -33,6 +36,7 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
   const [receiptUploaded, setReceiptUploaded] = useState(false);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const focusRef = useFocusTrap(isOpen && !confirmRemoveId);
   const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
   useEffect(() => {
@@ -70,7 +74,7 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
     try {
       const formData = new FormData();
       formData.append('receipt', file);
-      const res = await fetch(`/api/orders/${checkoutSuccess.orderId}/receipt`, {
+      const res = await csrfFetch(`/api/orders/${checkoutSuccess.orderId}/receipt`, {
         method: 'POST',
         body: formData
       });
@@ -103,6 +107,7 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
+            aria-label="Cerrar carrito"
           />
           <motion.div
             initial={{ x: '100%' }}
@@ -110,13 +115,17 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed top-0 right-0 h-full w-full max-w-md bg-darker border-l border-gold/20 flex flex-col shadow-2xl z-[210]"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Carrito de compras"
+            ref={focusRef}
           >
             <div className="flex items-center justify-between p-6 border-b border-gold/10">
               <h2 className="font-serif text-2xl text-gold uppercase tracking-widest flex items-center gap-3">
                 {checkoutSuccess ? <CheckCircle size={24} /> : <ShoppingBag size={24} />}
                 {checkoutSuccess ? 'Orden Creada' : 'Mi Canasta'}
               </h2>
-              <button onClick={onClose} className="text-gray-500 hover:text-gold transition-colors">
+              <button onClick={onClose} className="text-gray-400 hover:text-gold transition-colors p-2.5">
                 <X size={24} />
               </button>
             </div>
@@ -130,7 +139,7 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                 <p className="text-gray-400 text-xs mb-1 uppercase tracking-widest">
                   #{checkoutSuccess.orderId.slice(-8)}
                 </p>
-                <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-8">
+                <p className="text-gray-400 text-[10px] uppercase tracking-widest mb-8">
                   {checkoutSuccess.paymentMethod === 'transferencia'
                     ? 'Envía el comprobante por WhatsApp'
                     : 'Coordina la entrega por WhatsApp'}
@@ -141,25 +150,25 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                     <p className="text-[10px] uppercase tracking-widest text-gold/50 mb-3">Datos Bancarios</p>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Banco</span>
+                        <span className="text-gray-400">Banco</span>
                         <span className="text-white font-medium">{checkoutSuccess.bankDetails?.bankName || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Tipo</span>
+                        <span className="text-gray-400">Tipo</span>
                         <span className="text-white font-medium">{checkoutSuccess.bankDetails?.accountType || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Número</span>
+                        <span className="text-gray-400">Número</span>
                         <span className="text-white font-medium">{checkoutSuccess.bankDetails?.accountNumber || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between items-center border-t border-gold/10 pt-2 mt-2">
-                        <span className="text-gray-500">Alias</span>
+                        <span className="text-gray-400">Alias</span>
                         <div className="flex items-center gap-2">
                           <span className="text-gold font-bold">{checkoutSuccess.bankDetails?.alias || 'N/A'}</span>
                           {checkoutSuccess.bankDetails?.alias && (
                             <button
                               onClick={handleCopyAlias}
-                              className="text-gold hover:text-gold-light transition-colors p-1"
+                              className="text-gold hover:text-gold-light transition-colors w-11 h-11 flex items-center justify-center"
                               title="Copiar alias"
                             >
                               {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
@@ -168,11 +177,11 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                         </div>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">CUIT</span>
+                        <span className="text-gray-400">CUIT</span>
                         <span className="text-white font-medium">{checkoutSuccess.bankDetails?.cuit || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Titular</span>
+                        <span className="text-gray-400">Titular</span>
                         <span className="text-white font-medium">{checkoutSuccess.bankDetails?.holderName || 'N/A'}</span>
                       </div>
                     </div>
@@ -208,7 +217,7 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                       <CheckCircle size={20} className="text-green-500 flex-none" />
                       <div className="text-left">
                         <p className="text-green-500 text-xs font-bold uppercase tracking-widest">Comprobante subido</p>
-                        <p className="text-gray-500 text-[10px]">El administrador lo revisará para confirmar el pago</p>
+                        <p className="text-gray-400 text-[10px]">El administrador lo revisará para confirmar el pago</p>
                       </div>
                     </div>
                   )}
@@ -229,7 +238,7 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
 
                   <button
                     onClick={onClose}
-                    className="text-gray-500 text-[10px] uppercase tracking-widest hover:text-gold transition-colors"
+                    className="text-gray-400 text-[10px] uppercase tracking-widest hover:text-gold transition-colors"
                   >
                     Cerrar
                   </button>
@@ -238,7 +247,12 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
             <>
               {/* Confirm remove overlay */}
               {confirmRemoveId && (
-                <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-8">
+                <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-8"
+                  role="alertdialog"
+                  aria-modal="true"
+                  aria-label="Confirmar eliminación"
+                  onKeyDown={(e) => { if (e.key === 'Escape') setConfirmRemoveId(null); }}
+                >
                   <div className="bg-darker border border-gold/20 p-6 text-center max-w-xs w-full">
                     <p className="text-gray-300 text-xs uppercase tracking-widest mb-4">¿Eliminar este artículo?</p>
                     <div className="flex gap-3">
@@ -261,17 +275,17 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                   ) : (
                     items.map(item => (
                       <div key={item.productId} className="flex gap-4 bg-dark border border-gold/10 p-3 group">
-                        <img src={item.image} alt={item.title} className="w-16 h-20 object-cover" loading="lazy" />
+                        <NextImage src={item.image} alt={item.title} width={64} height={80} className="object-cover w-16 h-20" />
                         <div className="flex-1 flex flex-col justify-between">
                           <div>
                             <h4 className="text-gold font-serif text-sm truncate">{item.title}</h4>
-                            <p className="text-[10px] text-gray-500 uppercase tracking-widest">${item.price.toFixed(2)} c/u</p>
+                            <p className="text-[10px] text-gray-400 uppercase tracking-widest">${item.price.toFixed(2)} c/u</p>
                           </div>
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center border border-gold/20">
                               <button 
                                 onClick={() => onUpdateQuantity(item.productId, Math.max(1, item.quantity - 1))}
-                                className="px-3 py-2 text-gold hover:bg-gold/10 transition-colors text-sm"
+                                className="px-4 py-3 text-gold hover:bg-gold/10 transition-colors text-sm"
                               >
                                 -
                               </button>
@@ -285,14 +299,14 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                                   }
                                 }}
                                 disabled={item.quantity >= item.stock}
-                                className="px-3 py-2 text-gold hover:bg-gold/10 transition-colors text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="px-4 py-3 text-gold hover:bg-gold/10 transition-colors text-sm disabled:opacity-30 disabled:cursor-not-allowed"
                               >
                                 +
                               </button>
                             </div>
                             <button 
                               onClick={() => setConfirmRemoveId(item.productId)}
-                              className="text-red-500/50 hover:text-red-500 transition-colors p-1"
+                              className="text-red-500/50 hover:text-red-500 transition-colors w-11 h-11 flex items-center justify-center"
                             >
                               <Trash2 size={16} />
                             </button>
