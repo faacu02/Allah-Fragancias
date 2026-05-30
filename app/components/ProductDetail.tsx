@@ -38,6 +38,7 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
                 src={images[currentImageIndex]}
                 alt={product.name}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
               {images.length > 1 && (
                 <>
@@ -64,7 +65,7 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
                     onClick={() => setCurrentImageIndex(idx)}
                     className={`w-16 h-16 flex-none overflow-hidden border-2 transition-colors ${idx === currentImageIndex ? 'border-gold' : 'border-transparent opacity-50 hover:opacity-80'}`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
                   </button>
                 ))}
               </div>

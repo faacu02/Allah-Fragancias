@@ -119,7 +119,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
             <motion.p
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="text-gray-400 text-sm leading-relaxed tracking-widest uppercase max-w-xs mx-auto md:mx-0"
+              className="text-gray-400 text-sm leading-relaxed tracking-widest uppercase max-w-full sm:max-w-xs mx-auto md:mx-0"
             >
               {mode === 'forgot'
                 ? 'Ingresá tu correo y te enviaremos un enlace.'
@@ -178,7 +178,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                           className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
                           placeholder="Teléfono Celular" autoComplete="tel" />
                         <label htmlFor="phone" className="absolute left-0 top-3 text-gray-500 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
-                          Teléfono Celular
+                          Teléfono Celular <span className="text-gray-700 font-normal normal-case">(opcional)</span>
                         </label>
                       </div>
                     </>

@@ -94,6 +94,7 @@ export default function ClientDashboard({ onBack }: { onBack: () => void }) {
                         src={item.product?.images?.[0] || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80'} 
                         alt="Product" 
                         className="w-20 h-24 object-cover border border-gold/10 grayscale group-hover:grayscale-0 transition-all duration-500"
+                        loading="lazy"
                       />
                       <div>
                         <h4 className="text-gold font-serif text-lg mb-1">{item.product?.name || 'Perfume Descontinuado'}</h4>

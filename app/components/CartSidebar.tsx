@@ -261,7 +261,7 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                   ) : (
                     items.map(item => (
                       <div key={item.productId} className="flex gap-4 bg-dark border border-gold/10 p-3 group">
-                        <img src={item.image} alt={item.title} className="w-16 h-20 object-cover" />
+                        <img src={item.image} alt={item.title} className="w-16 h-20 object-cover" loading="lazy" />
                         <div className="flex-1 flex flex-col justify-between">
                           <div>
                             <h4 className="text-gold font-serif text-sm truncate">{item.title}</h4>

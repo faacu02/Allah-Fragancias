@@ -297,11 +297,11 @@ export default function InventoryTab() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-gold font-serif text-sm truncate">{product.name}</h4>
-                    <p className="text-[9px] text-gray-500 uppercase tracking-widest truncate">{product.collection}</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest truncate">{product.collection}</p>
                     <div className="flex items-center gap-3 mt-3 text-xs">
                       <span className="text-white font-mono">${product.price.toFixed(2)}</span>
                       <span className={`font-bold ${product.stock < 5 ? 'text-red-500' : 'text-white'}`}>{product.stock} uds</span>
-                      <span className={`text-[8px] px-1.5 py-0.5 uppercase font-bold ${product.status === 'LOW' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>{product.status}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 uppercase font-bold ${product.status === 'LOW' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>{product.status}</span>
                     </div>
                     <div className="flex gap-2 mt-3">
                       <button onClick={() => openEditModal(product)} className="flex-1 border border-gold/20 text-gold text-[10px] uppercase tracking-widest font-bold py-3 hover:bg-gold/10 transition-colors">Editar</button>
@@ -369,7 +369,7 @@ export default function InventoryTab() {
                     </Cell>
                   </td>
                   <td className="py-2 px-2">
-                    <span className={`text-[9px] px-2 py-0.5 uppercase font-bold ${product.status === 'LOW' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
+                    <span className={`text-[10px] px-2 py-0.5 uppercase font-bold ${product.status === 'LOW' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
                       {product.status}
                     </span>
                   </td>

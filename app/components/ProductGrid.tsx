@@ -47,7 +47,7 @@ export default function ProductGrid({ onProductClick, onAddToCart }: ProductGrid
       </div>
       
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1,2,3].map((n) => (
             <div key={n} className="p-6 md:p-8 border border-gold/10 animate-pulse">
               <div className="aspect-[3/4] bg-white/5 mb-8" />
@@ -56,8 +56,12 @@ export default function ProductGrid({ onProductClick, onAddToCart }: ProductGrid
             </div>
           ))}
         </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-20 border border-gold/10">
+          <p className="text-gray-500 text-xs uppercase tracking-widest">No hay fragancias disponibles en este momento.</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => (
             <ProductCard 
               key={product.id} 

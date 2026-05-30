@@ -32,6 +32,7 @@ export default function Hero({ onExploreClick }: HeroProps) {
             key={idx}
             alt="Luxury Perfume"
             className={`absolute inset-0 w-full h-full object-cover scale-105 transition-opacity duration-1000 ${idx === currentIndex ? 'opacity-60' : 'opacity-0 pointer-events-none'}`}
+            loading={idx === 0 ? 'eager' : 'lazy'}
             referrerPolicy="no-referrer"
             src={src}
           />

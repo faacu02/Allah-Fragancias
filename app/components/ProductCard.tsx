@@ -21,13 +21,14 @@ export default function ProductCard({ product, onClick, onAddToCart }: ProductPr
           alt={product.name}
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
+          loading="lazy"
         />
       </div>
       <div className="flex justify-between items-start mb-6">
         <div className="cursor-pointer min-w-0" onClick={onClick}>
           <h3 className="font-serif text-xl text-gold mb-2 truncate">{product.name}</h3>
           <p className="text-xs text-gray-500 uppercase tracking-widest truncate max-w-[120px] md:max-w-[200px]">{product.collection}</p>
-          <p className="text-[9px] text-gray-600 uppercase tracking-widest mt-1">{product.stock > 5 ? 'En stock' : `Solo ${product.stock} uds.`}</p>
+          <p className="text-[10px] text-gray-600 uppercase tracking-widest mt-1">{product.stock > 5 ? 'En stock' : `Solo ${product.stock} uds.`}</p>
         </div>
         <span className="text-gold-light font-bold tracking-tighter text-lg whitespace-nowrap ml-4">
           ${product.price?.toFixed(2) ?? '0.00'}

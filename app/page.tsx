@@ -31,6 +31,7 @@ export default function Home() {
   const [resetError, setResetError] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -159,9 +160,10 @@ export default function Home() {
           image: product.images[0] || '',
           stock: product.stock
        }];
-    });
-    setIsCartOpen(true);
-  };
+     });
+     setIsCartOpen(true);
+     toast.success('Añadido al carrito');
+   };
 
    const handleCheckout = async (method: 'efectivo' | 'transferencia') => {
      setIsProcessingCart(true);
@@ -228,6 +230,7 @@ export default function Home() {
                     <img 
                       alt="Heritage" 
                       className="w-full h-64 md:h-[600px] object-cover grayscale contrast-125"
+                      loading="lazy"
                       referrerPolicy="no-referrer"
                       src="https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&q=80&w=800" 
                     />
@@ -372,14 +375,14 @@ export default function Home() {
                     </button>
                   )}
 
-                  <div className="mt-auto pt-6 border-t border-gold/10">
-                    <button
-                      onClick={() => { setIsMenuOpen(false); handleLogout(); }}
-                      className="flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-colors w-full"
-                    >
-                      Cerrar Sesión
-                    </button>
-                  </div>
+                    <div className="mt-auto pt-6 border-t border-gold/10">
+                      <button
+                        onClick={() => setConfirmLogout(true)}
+                        className="flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-colors w-full"
+                      >
+                        Cerrar Sesión
+                      </button>
+                    </div>
                 </div>
               )}
             </motion.aside>
@@ -465,6 +468,23 @@ export default function Home() {
               )}
             </div>
           </motion.div>
+        )}
+
+        {confirmLogout && (
+          <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-darker border border-gold/20 w-full max-w-sm p-8 relative">
+              <h3 className="font-serif text-xl text-gold mb-4">Cerrar Sesión</h3>
+              <p className="text-gray-400 text-sm mb-6">¿Estás seguro de que querés cerrar sesión?</p>
+              <div className="flex gap-4">
+                <button onClick={() => setConfirmLogout(false)} className="flex-1 border border-gold/20 text-gold text-xs uppercase tracking-widest font-bold py-3 hover:bg-gold/10 transition-colors">
+                  Cancelar
+                </button>
+                <button onClick={() => { setConfirmLogout(false); setIsMenuOpen(false); handleLogout(); }} className="flex-1 bg-red-500/10 border border-red-500 text-red-500 text-xs uppercase tracking-widest font-bold py-3 hover:bg-red-500/20 transition-colors">
+                  Cerrar Sesión
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </AnimatePresence>
     </div>
