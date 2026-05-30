@@ -87,24 +87,8 @@ export default function Home() {
     if (savedCart) {
       try {
         const parsed = JSON.parse(savedCart);
-        setCartItems(parsed); // Show immediately from localStorage
-        if (parsed.length > 0 && allProducts.length > 0) {
-          const productMap = new Map<string, ProductData>(allProducts.map(p => [p.id, p]));
-          setCartItems(prev => {
-            const reconciled = prev
-              .map(item => {
-                const product = productMap.get(item.productId);
-                if (!product || product.stock <= 0) return null;
-                return { ...item, stock: product.stock, price: product.price };
-              })
-              .filter((x): x is CartItem => x !== null);
-            if (reconciled.length !== prev.length) {
-              toast('Algunos productos fueron removidos por falta de stock', { icon: '⚠️' });
-            }
-            return reconciled;
-          });
-        }
-      } catch(e) {
+        setCartItems(parsed);
+      } catch {
         localStorage.removeItem('mirage_cart');
       }
     }
@@ -153,6 +137,25 @@ export default function Home() {
     window.addEventListener('popstate', handlePop);
     return () => window.removeEventListener('popstate', handlePop);
   }, []);
+
+  // Reconcile cart with fresh product data
+  useEffect(() => {
+    if (!allProducts.length) return;
+    setCartItems(prev => {
+      const productMap = new Map<string, ProductData>(allProducts.map(p => [p.id, p]));
+      const reconciled = prev
+        .map(item => {
+          const product = productMap.get(item.productId);
+          if (!product || product.stock <= 0) return null;
+          return { ...item, stock: product.stock, price: product.price };
+        })
+        .filter((x): x is CartItem => x !== null);
+      if (reconciled.length !== prev.length) {
+        toast('Algunos productos fueron removidos por falta de stock', { icon: '⚠️' });
+      }
+      return reconciled;
+    });
+  }, [allProducts]);
 
   const handleLogout = async () => {
     try {
