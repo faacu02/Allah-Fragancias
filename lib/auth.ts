@@ -13,7 +13,7 @@ export function verifyAuth(request: NextRequest) {
   if (!token) return null;
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string; role: string };
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as { id: string; email: string; role: string };
     if (!decoded.id || !decoded.email || !decoded.role) return null;
     return decoded;
   } catch {
