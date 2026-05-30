@@ -84,6 +84,7 @@ export default function Home() {
     }
     setUser(null);
     setCartItems([]);
+    localStorage.removeItem('mirage_cart');
     toast.success('Sesión finalizada exitosamente.');
     setView('landing');
     setShowAuthModal(true);
@@ -124,14 +125,15 @@ export default function Home() {
          return prev;
        }
        if (exists) {
-         return prev.map(i => i.productId === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+         return prev.map(i => i.productId === product.id ? { ...i, quantity: i.quantity + 1, stock: product.stock } : i);
        }
        return [...prev, {
           productId: product.id,
           title: product.name,
           price: product.price,
           quantity: 1,
-          image: product.images[0] || ''
+          image: product.images[0] || '',
+          stock: product.stock
        }];
     });
     setIsCartOpen(true);

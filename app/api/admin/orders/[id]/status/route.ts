@@ -27,62 +27,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'La orden ya fue aprobada.' }, { status: 400 });
     }
 
-    // Check stock availability before approving
-    const stockErrors: string[] = [];
-    for (const item of order.items) {
-      if (!item.product) {
-        stockErrors.push(`Producto ${item.productId} no encontrado`);
-        continue;
-      }
-      if (item.product.stock < item.quantity) {
-        stockErrors.push(`${item.product.name} tiene solo ${item.product.stock} unidades (necesita ${item.quantity})`);
-      }
-    }
-
-    if (stockErrors.length > 0) {
-      return NextResponse.json({
-        error: 'Stock insuficiente: ' + stockErrors.join('. ')
-      }, { status: 409 });
-    }
-
-    // Use a transaction to ensure atomicity of order status update and stock deduction
-    const updatedOrder = await prisma.$transaction(async (tx) => {
-      // Update order status
-      const updatedOrder = await tx.order.update({
-        where: { id: orderId },
-        data: { status: 'approved' }
-      });
-
-      // Update product stock for each item in the order with negative stock guard
-      for (const item of order.items) {
-        const result = await tx.product.updateMany({
-          where: {
-            id: item.productId,
-            stock: { gte: item.quantity } // Guard: only update if enough stock
-          },
-          data: {
-            stock: { decrement: item.quantity }
-          }
-        });
-
-        if (result.count === 0) {
-          throw new Error(`Stock insuficiente para ${item.product?.name || item.productId}`);
-        }
-
-        // Update LOW status based on new stock
-        const product = await tx.product.findUnique({ where: { id: item.productId } });
-        if (product) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: { status: product.stock < 10 ? 'LOW' : 'OK' }
-          });
-        }
-      }
-
-      return updatedOrder;
+    // Stock was already decremented atomically at checkout time.
+    // Only update order status here — no double stock deduction.
+    const updatedOrder = await prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'approved' }
     });
 
-    // Send emails (best effort, outside transaction)
+    // Send emails (best effort)
     const context = {
        orderId: order.id,
        userName: order.user?.name || 'Cliente',

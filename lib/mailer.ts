@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer';
 
+const escapeHtml = (str: string) =>
+  str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 export const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -28,7 +31,7 @@ export const sendWelcomeEmail = async (toEmail: string, userName: string) => {
               </h1>
               <p style="color: #666; font-size: 10px; letter-spacing: 5px; text-transform: uppercase; margin-top: 10px;">Luxurious Collection</p>
             </div>
-            <h2 style="font-family: serif; color: #fff; font-size: 22px; margin-bottom: 15px;">Bienvenido/a ${userName},</h2>
+            <h2 style="font-family: serif; color: #fff; font-size: 22px; margin-bottom: 15px;">Bienvenido/a ${escapeHtml(userName)},</h2>
             <p style="color: #aaaaaa; font-size: 14px; line-height: 1.6; letter-spacing: 0.5px;">
               Te has unido al círculo exclusivo de Allah Fragancias. Ahora podés explorar nuestra colección de esencias del desierto y realizar tus pedidos.
             </p>
@@ -119,7 +122,7 @@ export const sendOrderEmail = async (toEmail: string, context: OrderContext, isP
   const itemsHtml = context.items.map(item => `
     <tr>
       <td style="padding: 15px 0; border-bottom: 1px solid rgba(212, 175, 55, 0.2); color: #fff;">
-        <span style="font-family: serif; font-size: 16px; color: #d4af37;">${item.title}</span><br>
+        <span style="font-family: serif; font-size: 16px; color: #d4af37;">${escapeHtml(item.title)}</span><br>
         <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #888;">CANTIDAD: ${item.quantity}</span>
       </td>
       <td style="text-align: right; padding: 15px 0; border-bottom: 1px solid rgba(212, 175, 55, 0.2); color: #fff; font-family: monospace;">
@@ -137,7 +140,7 @@ export const sendOrderEmail = async (toEmail: string, context: OrderContext, isP
           </h1>
           <p style="color: #666; font-size: 10px; letter-spacing: 5px; text-transform: uppercase; margin-top: 10px;">Luxurious Collection</p>
         </div>
-        <h2 style="font-family: serif; color: #fff; font-size: 22px; margin-bottom: 15px;">Estimado/a ${context.userName || 'Miembro'},</h2>
+        <h2 style="font-family: serif; color: #fff; font-size: 22px; margin-bottom: 15px;">Estimado/a ${escapeHtml(context.userName || 'Miembro')},</h2>
         <p style="color: #aaaaaa; font-size: 14px; line-height: 1.6; letter-spacing: 0.5px;">
           ${statusMessage}
         </p>
@@ -196,7 +199,7 @@ export const sendAdminNotificationEmail = async (adminEmail: string, context: Or
   const itemsHtml = context.items.map(item => `
     <tr>
       <td style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); color: #ccc;">
-        <strong>${item.title}</strong> (Qt: ${item.quantity})
+        <strong>${escapeHtml(item.title)}</strong> (Qt: ${item.quantity})
       </td>
       <td style="text-align: right; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); color: #d4af37;">
         $${(item.price * item.quantity).toFixed(2)}
@@ -211,8 +214,8 @@ export const sendAdminNotificationEmail = async (adminEmail: string, context: Or
       <div style="background-color: #000; border: 1px solid #d4af37; padding: 20px;">
         <h3 style="color: #fff; margin-top: 0;">Detalles del Cliente</h3>
         <ul style="color: #ccc; padding-left: 20px; font-size: 14px;">
-          <li><strong>Nombre:</strong> ${context.userName}</li>
-          <li><strong>Teléfono:</strong> ${context.phone || 'No registrado'}</li>
+          <li><strong>Nombre:</strong> ${escapeHtml(context.userName)}</li>
+          <li><strong>Teléfono:</strong> ${escapeHtml(context.phone || 'No registrado')}</li>
           <li><strong>ID de Orden:</strong> #${context.orderId.slice(-8)}</li>
           <li><strong>Método:</strong> ${context.paymentMethod.toUpperCase()}</li>
         </ul>
@@ -229,7 +232,7 @@ export const sendAdminNotificationEmail = async (adminEmail: string, context: Or
     await transporter.sendMail({
       from: `"Allah Notificaciones" <${process.env.SMTP_USER}>`,
       to: adminEmail,
-      subject: `🚨 VENTA: ${statusTitle} - ${context.userName}`,
+      subject: `VENTA: ${statusTitle} - ${escapeHtml(context.userName)}`,
       html: htmlBody,
     });
     return true;

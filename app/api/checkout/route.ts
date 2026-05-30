@@ -17,7 +17,13 @@ export async function POST(request: NextRequest) {
 
     // Get userId from server-side session (NOT from request body)
     const authUser = verifyAuth(request);
-    const userId = authUser?.id || null;
+    if (!authUser) {
+      return NextResponse.json({ error: 'Autenticación requerida' }, { status: 401 });
+    }
+    if (authUser.role === 'admin') {
+      return NextResponse.json({ error: 'Las cuentas administrativas no pueden realizar compras' }, { status: 403 });
+    }
+    const userId = authUser.id;
 
     // Read prices from database — never trust client prices
     const productIds = items.map((i: any) => i.productId);

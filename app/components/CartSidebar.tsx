@@ -11,6 +11,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  stock: number;
 }
 
 interface CartSidebarProps {
@@ -250,8 +251,15 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                               </button>
                               <span className="text-xs text-white px-2 font-bold">{item.quantity}</span>
                               <button 
-                                onClick={() => onUpdateQuantity(item.productId, item.quantity + 1)}
-                                className="px-2 py-1 text-gold hover:bg-gold/10 transition-colors text-xs"
+                                onClick={() => {
+                                  if (item.quantity < item.stock) {
+                                    onUpdateQuantity(item.productId, item.quantity + 1);
+                                  } else {
+                                    toast.error(`Solo hay ${item.stock} unidades disponibles`);
+                                  }
+                                }}
+                                disabled={item.quantity >= item.stock}
+                                className="px-2 py-1 text-gold hover:bg-gold/10 transition-colors text-xs disabled:opacity-30 disabled:cursor-not-allowed"
                               >
                                 +
                               </button>

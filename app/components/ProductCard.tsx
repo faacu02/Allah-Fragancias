@@ -29,7 +29,7 @@ export default function ProductCard({ product, onClick, onAddToCart }: ProductPr
           <p className="text-xs text-gray-500 uppercase tracking-widest truncate max-w-[120px] md:max-w-[200px]">{product.collection}</p>
         </div>
         <span className="text-gold-light font-bold tracking-tighter text-lg whitespace-nowrap ml-4">
-          ${product.price.toFixed(2)}
+          ${product.price?.toFixed(2) ?? '0.00'}
         </span>
       </div>
       
