@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 import { ArrowLeft, ShoppingBag, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 
 interface ProductData {
   id: string;
@@ -25,6 +26,7 @@ interface ProductDetailProps {
 export default function ProductDetail({ product, onBack, onAddToCart }: ProductDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
+  const zoomTrapRef = useFocusTrap(!!zoomImage);
   const images = product.images?.length > 0 ? product.images : ["https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=1200"];
 
   const prevImage = useCallback(() => {
@@ -151,7 +153,7 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
 
       {/* Zoom modal */}
       {zoomImage && (
-        <div className="fixed inset-0 z-[300] bg-black/90 flex items-center justify-center p-4 cursor-pointer" onClick={() => setZoomImage(null)} role="dialog" aria-modal="true" aria-label="Vista ampliada de la imagen">
+        <div ref={zoomTrapRef} className="fixed inset-0 z-[300] bg-black/90 flex items-center justify-center p-4 cursor-pointer" onClick={() => setZoomImage(null)} role="dialog" aria-modal="true" aria-label="Vista ampliada de la imagen">
           <button onClick={() => setZoomImage(null)} className="absolute top-6 right-6 text-white hover:text-gold transition-colors p-2.5 z-10">
             <X size={28} />
           </button>

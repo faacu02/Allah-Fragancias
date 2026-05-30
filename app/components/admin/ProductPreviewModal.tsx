@@ -3,6 +3,7 @@
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useEffect, useCallback } from 'react';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 
 interface Product {
   id: string;
@@ -22,6 +23,7 @@ interface ProductPreviewModalProps {
 
 export default function ProductPreviewModal({ product, onClose }: ProductPreviewModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const ref = useFocusTrap(true);
 
   const prevImage = useCallback(() => {
     if (!product?.images?.length) return;
@@ -47,7 +49,7 @@ export default function ProductPreviewModal({ product, onClose }: ProductPreview
   if (!product) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[110] flex items-center justify-center p-4"
+    <div ref={ref} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[110] flex items-center justify-center p-4"
       role="dialog" aria-modal="true" aria-label="Vista previa del producto"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >

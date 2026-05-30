@@ -2,9 +2,18 @@ import { useEffect, useRef } from 'react';
 
 export function useFocusTrap(active: boolean) {
   const ref = useRef<HTMLDivElement>(null);
+  const previousElementRef = useRef<Element | null>(null);
 
   useEffect(() => {
-    if (!active) return;
+    if (active) {
+      previousElementRef.current = document.activeElement;
+    }
+
+    if (!active) {
+      const prev = previousElementRef.current as HTMLElement | null;
+      if (prev && prev !== document.body) prev.focus();
+      return;
+    }
 
     const el = ref.current;
     if (!el) return;
@@ -24,7 +33,11 @@ export function useFocusTrap(active: boolean) {
     }
 
     document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
+    return () => {
+      document.removeEventListener('keydown', handler);
+      const prev = previousElementRef.current as HTMLElement | null;
+      if (prev && prev !== document.body) prev.focus();
+    };
   }, [active]);
 
   return ref;

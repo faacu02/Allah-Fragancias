@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 
 interface ConfirmDeleteModalProps {
   name: string;
@@ -9,6 +10,8 @@ interface ConfirmDeleteModalProps {
 }
 
 export default function ConfirmDeleteModal({ name, onConfirm, onCancel }: ConfirmDeleteModalProps) {
+  const ref = useFocusTrap(true);
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onCancel();
@@ -18,7 +21,7 @@ export default function ConfirmDeleteModal({ name, onConfirm, onCancel }: Confir
   }, [onCancel]);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+    <div ref={ref} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
       role="alertdialog" aria-modal="true" aria-label="Confirmar eliminación"
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
