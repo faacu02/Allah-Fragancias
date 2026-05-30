@@ -36,21 +36,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon.ico')
   ) {
-  const response = NextResponse.next();
-  addSecurityHeaders(response);
-
-  // Set CSRF cookie if not present
-  if (!request.cookies.get(getCsrfCookieName())) {
-    const token = generateCsrfToken();
-    response.cookies.set(getCsrfCookieName(), token, {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 60 * 60 * 24,
-    });
-  }
-
-  return response;
+    return addSecurityHeaders(NextResponse.next());
   }
 
   if (pathname.startsWith('/api/')) {
@@ -101,7 +87,16 @@ export async function middleware(request: NextRequest) {
     return addSecurityHeaders(NextResponse.redirect(url));
   }
 
-  return addSecurityHeaders(NextResponse.next());
+  const response = addSecurityHeaders(NextResponse.next());
+  if (!request.cookies.get(getCsrfCookieName())) {
+    response.cookies.set(getCsrfCookieName(), generateCsrfToken(), {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24,
+    });
+  }
+  return response;
 }
 
 export const config = {
