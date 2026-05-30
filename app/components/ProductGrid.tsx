@@ -13,7 +13,7 @@ export default function ProductGrid({ onProductClick, onAddToCart }: ProductGrid
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchProducts = () => {
     fetch('/api/products')
       .then(res => res.json())
       .then(data => {
@@ -25,6 +25,13 @@ export default function ProductGrid({ onProductClick, onAddToCart }: ProductGrid
          toast.error("Error al cargar productos");
          setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    // Refresh every 30s to keep stock/prices up to date
+    const interval = setInterval(fetchProducts, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   return (

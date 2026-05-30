@@ -278,10 +278,11 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
                 </div>
 
                 <div className="p-6 border-t border-gold/10 bg-dark">
-                  <div className="flex justify-between items-center mb-6">
+                  <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-400 text-xs uppercase tracking-widest">Total Estimado</span>
                     <span className="font-serif text-3xl text-gold">${total.toFixed(2)}</span>
                   </div>
+                  <p className="text-[8px] text-gray-600 text-right uppercase tracking-widest mb-6">Impuestos incluidos · No incluye envío</p>
                   
                    {items.length > 0 && (
                      <div className="space-y-4">

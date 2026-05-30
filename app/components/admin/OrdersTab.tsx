@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye } from 'lucide-react';
+import { Eye, XCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
@@ -27,7 +27,7 @@ export default function OrdersTab() {
   }, []);
 
   const handleApproveOrder = async (orderId: string) => {
-     if(!window.confirm('¿Marcar pago recibido? Esta acción enviará el Email dorado de "Aprobado" al usuario y a su propio correo.')) return;
+     if(!window.confirm('¿Marcar pago recibido?')) return;
      
      try {
       const res = await fetch(`/api/admin/orders/${orderId}/status`, {
@@ -38,12 +38,31 @@ export default function OrdersTab() {
          body: JSON.stringify({ status: 'approved' })
       });
        if(!res.ok) throw new Error("Error approving");
-       toast.success("Orden Aprobada Correctamente. Emails disparados.");
+       toast.success("Orden Aprobada");
        fetchOrders();
      } catch(e) {
        toast.error("Hubo un error al aprobar");
      }
   };
+
+  const handleCancelOrder = async (orderId: string) => {
+    if(!window.confirm('¿Cancelar esta orden? Se restaurará el stock.')) return;
+    
+    try {
+     const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'cancelled' })
+     });
+      if(!res.ok) throw new Error("Error cancelling");
+      toast.success("Orden Cancelada. Stock restaurado.");
+      fetchOrders();
+    } catch(e) {
+      toast.error("Hubo un error al cancelar");
+    }
+ };
 
   return (
     <section className="px-6 md:px-12 py-12">
@@ -60,7 +79,7 @@ export default function OrdersTab() {
           <div className="flex flex-col gap-6">
              {orders.map((order) => (
                 <div key={order.id} className="bg-darker border border-gold/15 p-6 group transition-all duration-300 relative overflow-hidden">
-                   <div className={`absolute left-0 top-0 w-1 h-full ${order.status === 'approved' ? 'bg-green-500' : 'bg-gold'}`}></div>
+                   <div className={`absolute left-0 top-0 w-1 h-full ${order.status === 'approved' ? 'bg-green-500' : order.status === 'cancelled' ? 'bg-red-500' : 'bg-gold'}`}></div>
                    <div className="flex flex-col md:flex-row justify-between gap-6">
                       <div>
                          <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">
@@ -77,8 +96,12 @@ export default function OrdersTab() {
                             <span className="text-[10px] uppercase tracking-widest px-2 py-1 bg-white/5 border border-white/10 text-white">
                                {order.paymentMethod}
                             </span>
-                            <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-1 ${order.status === 'approved' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-gold/10 text-gold border border-gold/20'}`}>
-                               {order.status === 'approved' ? 'Pagado' : 'Pendiente'}
+                            <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-1 ${
+                              order.status === 'approved' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                              order.status === 'cancelled' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                              'bg-gold/10 text-gold border border-gold/20'
+                            }`}>
+                               {order.status === 'approved' ? 'Pagado' : order.status === 'cancelled' ? 'Cancelado' : 'Pendiente'}
                             </span>
                          </div>
                       </div>
@@ -110,7 +133,13 @@ export default function OrdersTab() {
                     )}
 
                     {order.status === 'pending' && (
-                      <div className="mt-6 pt-4 border-t border-gold/20 flex justify-end">
+                      <div className="mt-6 pt-4 border-t border-gold/20 flex justify-end gap-3">
+                         <button
+                           onClick={() => handleCancelOrder(order.id)}
+                           className="border border-red-500/30 text-red-500 px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-red-500/10 transition-colors"
+                         >
+                           Cancelar
+                         </button>
                          <button 
                             onClick={() => handleApproveOrder(order.id)}
                             className="bg-gold text-dark px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-gold-light transition-colors"
@@ -120,23 +149,23 @@ export default function OrdersTab() {
                       </div>
                     )}
                  </div>
-              ))}
+             ))}
 
-              {/* Receipt preview modal */}
-              {previewReceipt && (
-                <div
-                  className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-4 cursor-pointer"
-                  onClick={() => setPreviewReceipt(null)}
-                >
-                  <img
-                    src={previewReceipt}
-                    alt="Comprobante"
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </div>
-              )}
-           </div>
-        )}
+             {/* Receipt preview modal */}
+             {previewReceipt && (
+               <div
+                 className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-4 cursor-pointer"
+                 onClick={() => setPreviewReceipt(null)}
+               >
+                 <img
+                   src={previewReceipt}
+                   alt="Comprobante"
+                   className="max-w-full max-h-full object-contain"
+                 />
+               </div>
+             )}
+          </div>
+       )}
     </section>
   );
 }

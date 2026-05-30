@@ -68,8 +68,10 @@ export default function ClientDashboard({ onBack }: { onBack: () => void }) {
                   <div className="flex items-center gap-2 text-xs uppercase tracking-widest">
                     {order.status === 'pending' ? (
                        <span className="text-yellow-500 flex items-center gap-1"><Clock size={12}/> Pendiente</span>
-                    ) : (
+                    ) : order.status === 'approved' ? (
                        <span className="text-emerald-500 flex items-center gap-1"><CheckCircle size={12}/> Confirmado</span>
+                    ) : (
+                       <span className="text-red-500 flex items-center gap-1">Cancelado</span>
                     )}
                     <span className="text-gray-500">· {order.paymentMethod === 'transferencia' ? 'Transferencia' : 'Efectivo'}</span>
                   </div>

@@ -49,7 +49,31 @@ export default function Home() {
 
     const savedCart = localStorage.getItem('mirage_cart');
     if (savedCart) {
-      try { setCartItems(JSON.parse(savedCart)); } catch(e) {}
+      try {
+        const parsed = JSON.parse(savedCart);
+        setCartItems(parsed); // Show immediately from localStorage
+        if (parsed.length > 0) {
+          // Revalidate stock and prices against DB in background
+          fetch('/api/products').then(res => res.json()).then((allProducts: any[]) => {
+            const productMap = new Map<string, any>(allProducts.map((p: any) => [p.id, p]));
+            setCartItems(prev => {
+              const reconciled = prev
+                .map(item => {
+                  const product = productMap.get(item.productId);
+                  if (!product || product.stock <= 0) return null;
+                  return { ...item, stock: product.stock, price: product.price };
+                })
+                .filter(Boolean);
+              if (reconciled.length !== prev.length) {
+                toast('Algunos productos fueron removidos por falta de stock', { icon: '⚠️' });
+              }
+              return reconciled;
+            });
+          }).catch(() => {});
+        }
+      } catch(e) {
+        localStorage.removeItem('mirage_cart');
+      }
     }
 
     const urlParams = new URLSearchParams(window.location.search);
