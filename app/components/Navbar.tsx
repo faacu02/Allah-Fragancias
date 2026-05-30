@@ -62,7 +62,7 @@ export default function Navbar({ onRegisterClick, user, onLogout, cartCount = 0,
           <button onClick={onCartClick} className="relative text-white hover:text-gold transition-colors cursor-pointer ml-2 p-2.5" aria-label="Abrir carrito">
             <ShoppingBag size={24} />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-gold text-dark text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-gold text-dark text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center" aria-live="polite" aria-atomic="true">
                 {cartCount}
               </span>
             )}
