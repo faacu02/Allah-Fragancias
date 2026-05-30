@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken, setTokenCookie } from '@/lib/auth';
 import validator from 'validator';
+import { checkRateLimit, getRemainingAttempts } from '@/lib/rate-limit-login';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +21,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email inválido' }, { status: 400 });
     }
 
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+    const rateLimitKey = `login:${ip}:${sanitizedEmail}`;
+
+    if (!checkRateLimit(rateLimitKey)) {
+      return NextResponse.json({
+        error: 'Demasiados intentos. Intente de nuevo en 15 minutos.',
+        remaining: 0,
+      }, { status: 429 });
+    }
+
     const user = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
     
     if (!user) return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
@@ -30,7 +41,7 @@ export async function POST(request: NextRequest) {
     const token = signToken({ id: user.id, email: user.email, role: user.role });
     const userResponse = { id: user.id, email: user.email, name: user.name, phone: user.phone, role: user.role };
     
-    const res = NextResponse.json({ user: userResponse });
+    const res = NextResponse.json({ user: userResponse, remaining: getRemainingAttempts(rateLimitKey) });
     setTokenCookie(res, token);
     return res;
   } catch (error) {

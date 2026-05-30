@@ -23,6 +23,9 @@ export async function POST(request: NextRequest) {
     if (!password || typeof password !== 'string' || password.length < 6) {
       return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres' }, { status: 400 });
     }
+    if (!validator.isStrongPassword(password, { minLength: 6, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 0 })) {
+      return NextResponse.json({ error: 'La contraseña debe contener mayúsculas, minúsculas y números' }, { status: 400 });
+    }
     
     const sanitizedPhone = phone ? validator.trim(phone).replace(/\s+/g, '') : '';
     if (sanitizedPhone && !validator.isNumeric(sanitizedPhone)) {
@@ -41,12 +44,11 @@ export async function POST(request: NextRequest) {
           phone: sanitizedPhone 
         }
       });
-    } catch (createError: any) {
-      // Handle P2002 unique constraint violation (race condition on duplicate email)
-      if (createError?.code === 'P2002') {
+    } catch (e: unknown) {
+      if (e && typeof e === 'object' && 'code' in e && (e as { code: string }).code === 'P2002') {
         return NextResponse.json({ error: 'Error al registrar. Intente con otro email.' }, { status: 400 });
       }
-      throw createError;
+      throw e;
     }
 
     // Send welcome email

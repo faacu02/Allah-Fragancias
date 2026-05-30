@@ -21,22 +21,22 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
           <nav className="flex flex-col gap-4">
             <button 
               onClick={() => setActiveTab('inventory')}
-               className={`flex items-center gap-4 px-4 py-3 text-sm tracking-widest uppercase transition-all duration-300 ${activeTab === 'inventory' ? 'bg-gold/10 text-gold border-r-2 border-gold font-bold' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+               className={`flex items-center gap-4 px-4 py-3 text-sm tracking-widest uppercase transition-all duration-300 ${activeTab === 'inventory' ? 'bg-gold/10 text-gold border-r-2 border-gold font-bold' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
               <Package size={18} /> Inventario
             </button>
             <button 
                onClick={() => setActiveTab('orders')}
-               className={`flex items-center gap-4 px-4 py-3 text-sm tracking-widest uppercase transition-all duration-300 ${activeTab === 'orders' ? 'bg-gold/10 text-gold border-r-2 border-gold font-bold' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+               className={`flex items-center gap-4 px-4 py-3 text-sm tracking-widest uppercase transition-all duration-300 ${activeTab === 'orders' ? 'bg-gold/10 text-gold border-r-2 border-gold font-bold' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
               <FileText size={18} /> Órdenes
             </button>
 
-            <a className="flex items-center gap-4 text-gold/50 pl-4 hover:text-gold hover:tracking-[0.15em] transition-all duration-300 mt-8" href="#">
+            <a className="flex items-center gap-4 text-gold/50 pl-4 hover:text-gold hover:tracking-[0.15em] transition-all duration-300 mt-8 py-3" href="#">
               <BarChart3 size={20} />
               <span className="text-xs tracking-widest uppercase">Analytics</span>
             </a>
-            <a className="flex items-center gap-4 text-gold/50 pl-4 hover:text-gold hover:tracking-[0.15em] transition-all duration-300" href="#">
+            <a className="flex items-center gap-4 text-gold/50 pl-4 hover:text-gold hover:tracking-[0.15em] transition-all duration-300 py-3" href="#">
               <Settings size={20} />
               <span className="text-xs tracking-widest uppercase">Ajustes</span>
             </a>
@@ -47,7 +47,7 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
       <main className="md:ml-80 flex-grow pb-24 md:pb-12 text-gray-300">
         <header className="sticky top-0 z-50 bg-dark/60 backdrop-blur-3xl px-6 md:px-12 py-6 flex justify-between items-center w-full border-b border-gold/5">
           <div className="flex items-center gap-4">
-            <button onClick={onBack} className="text-gold hover:text-gold-light transition-colors cursor-pointer">
+            <button onClick={onBack} className="text-gold hover:text-gold-light transition-colors cursor-pointer p-2.5">
               <ArrowLeft size={24} />
             </button>
             <h2 className="font-serif text-gold uppercase tracking-tighter text-lg md:text-xl">
@@ -67,14 +67,14 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-darker border-t border-gold/15 flex">
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`flex-1 flex flex-col items-center gap-1 py-3 text-[9px] uppercase tracking-widest transition-colors ${activeTab === 'inventory' ? 'text-gold' : 'text-gray-600'}`}
+          className={`flex-1 flex flex-col items-center gap-1 py-4 text-[10px] uppercase tracking-widest transition-colors ${activeTab === 'inventory' ? 'text-gold' : 'text-gray-600'}`}
         >
           <Package size={18} />
           Inventario
         </button>
         <button
           onClick={() => setActiveTab('orders')}
-          className={`flex-1 flex flex-col items-center gap-1 py-3 text-[9px] uppercase tracking-widest transition-colors ${activeTab === 'orders' ? 'text-gold' : 'text-gray-600'}`}
+          className={`flex-1 flex flex-col items-center gap-1 py-4 text-[10px] uppercase tracking-widest transition-colors ${activeTab === 'orders' ? 'text-gold' : 'text-gray-600'}`}
         >
           <FileText size={18} />
           Órdenes

@@ -1,9 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@300;400;600;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-serif: "Noto Serif", serif;
-  --font-sans: "Manrope", sans-serif;
+  --font-serif: var(--font-serif), serif;
+  --font-sans: var(--font-sans), sans-serif;
   
   --color-gold-light: #f2ca50;
   --color-gold: #d4af37;
@@ -30,4 +29,20 @@ input:-webkit-autofill:active {
     transition: background-color 5000s ease-in-out 0s;
     caret-color: #d4af37;
     border-radius: 0 !important;
+}
+
+/* Keyboard focus indicator for accessibility */
+*:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

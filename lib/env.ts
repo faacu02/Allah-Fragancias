@@ -1,0 +1,46 @@
+import { createEnv } from '@t3-oss/env-nextjs';
+import { z } from 'zod';
+
+export const env = createEnv({
+  server: {
+    DATABASE_URL: z.string().url(),
+    JWT_SECRET: z.string().min(32),
+    CLOUDINARY_CLOUD_NAME: z.string().min(1),
+    CLOUDINARY_API_KEY: z.string().min(1),
+    CLOUDINARY_API_SECRET: z.string().min(1),
+    SMTP_USER: z.string().email().optional(),
+    SMTP_PASS: z.string().optional(),
+    UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+    BANK_NAME: z.string().optional(),
+    ACCOUNT_TYPE: z.string().optional(),
+    ACCOUNT_NUMBER: z.string().optional(),
+    ALIAS: z.string().optional(),
+    CUIT: z.string().optional(),
+    HOLDER_NAME: z.string().optional(),
+  },
+  client: {
+    NEXT_PUBLIC_BASE_URL: z.string().url().default('https://allahfragancias.vercel.app'),
+    NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional(),
+  },
+  runtimeEnv: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    JWT_SECRET: process.env.JWT_SECRET,
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+    BANK_NAME: process.env.BANK_NAME,
+    ACCOUNT_TYPE: process.env.ACCOUNT_TYPE,
+    ACCOUNT_NUMBER: process.env.ACCOUNT_NUMBER,
+    ALIAS: process.env.ALIAS,
+    CUIT: process.env.CUIT,
+    HOLDER_NAME: process.env.HOLDER_NAME,
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+    NEXT_PUBLIC_WHATSAPP_NUMBER: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+  },
+  emptyStringAsUndefined: true,
+});

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth';
 import { sendOrderEmail, sendAdminNotificationEmail } from '@/lib/mailer';
 import { checkoutRatelimit } from '@/lib/rate-limit';
+import { env } from '@/lib/env';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
     const userId = authUser.id;
 
     // Read prices from database — never trust client prices
-    const productIds = items.map((i: any) => i.productId);
+    const productIds = items.map((i: { productId: string }) => i.productId);
     const dbProducts = await prisma.product.findMany({
       where: { id: { in: productIds } }
     });
@@ -153,12 +154,12 @@ export async function POST(request: NextRequest) {
 
     if (paymentMethod === 'transferencia') {
       const bankDetails = {
-        bankName: process.env.BANK_NAME || 'Banco Ejemplo',
-        accountType: process.env.ACCOUNT_TYPE || 'Cuenta Corriente',
-        accountNumber: process.env.ACCOUNT_NUMBER || '123456789',
-        alias: process.env.ALIAS || 'ALLAH.FRAGANCIAS',
-        cuit: process.env.CUIT || '20-12345678-9',
-        holderName: process.env.HOLDER_NAME || 'Allah Fragancias'
+        bankName: env.BANK_NAME || 'Banco Ejemplo',
+        accountType: env.ACCOUNT_TYPE || 'Cuenta Corriente',
+        accountNumber: env.ACCOUNT_NUMBER || '123456789',
+        alias: env.ALIAS || 'ALLAH.FRAGANCIAS',
+        cuit: env.CUIT || '20-12345678-9',
+        holderName: env.HOLDER_NAME || 'Allah Fragancias'
       };
 
       return NextResponse.json({

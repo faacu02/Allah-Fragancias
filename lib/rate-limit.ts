@@ -1,11 +1,9 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { env } from './env';
 
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-const redis = redisUrl && redisToken
-  ? new Redis({ url: redisUrl, token: redisToken })
+const redis = env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
+  ? new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN })
   : null;
 
 export function createRatelimit(requests: number, window: number) {

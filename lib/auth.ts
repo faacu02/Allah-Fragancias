@@ -1,11 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from './env';
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('FATAL: JWT_SECRET no está definido en las variables de entorno.');
-}
-
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = env.JWT_SECRET;
 const COOKIE_NAME = 'mirage_token';
 
 export function verifyAuth(request: NextRequest) {

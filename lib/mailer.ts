@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { env } from './env';
 
 const escapeHtml = (str: string) =>
   str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -6,20 +7,20 @@ const escapeHtml = (str: string) =>
 export const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: env.SMTP_USER,
+    pass: env.SMTP_PASS,
   },
 });
 
 export const sendWelcomeEmail = async (toEmail: string, userName: string) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  if (!env.SMTP_USER || !env.SMTP_PASS) {
     console.warn("Correo no enviado: Credenciales SMTP faltantes");
     return false;
   }
 
   try {
     await transporter.sendMail({
-      from: `"Allah Fragancias" <${process.env.SMTP_USER}>`,
+      from: `"Allah Fragancias" <${env.SMTP_USER}>`,
       to: toEmail,
       subject: 'Bienvenido a Allah Fragancias',
       html: `
@@ -36,7 +37,7 @@ export const sendWelcomeEmail = async (toEmail: string, userName: string) => {
               Te has unido al círculo exclusivo de Allah Fragancias. Ahora podés explorar nuestra colección de esencias del desierto y realizar tus pedidos.
             </p>
             <div style="text-align: center; margin: 40px 0;">
-              <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}" style="background-color: #d4af37; color: #000; padding: 14px 32px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; display: inline-block;">
+              <a href="${env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}" style="background-color: #d4af37; color: #000; padding: 14px 32px; text-decoration: none; font-weight: bold; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; display: inline-block;">
                 Explorar Colección
               </a>
             </div>
@@ -59,17 +60,17 @@ export const sendWelcomeEmail = async (toEmail: string, userName: string) => {
 };
 
 export const sendPasswordResetEmail = async (toEmail: string, token: string) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  if (!env.SMTP_USER || !env.SMTP_PASS) {
     console.warn("Correo no enviado: Credenciales SMTP faltantes");
     return false;
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const resetUrl = `${baseUrl}/?reset-token=${token}`;
+  const baseUrl = env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const resetUrl = `${baseUrl}/#reset-token=${token}`;
 
   try {
     await transporter.sendMail({
-      from: `"Allah Fragancias" <${process.env.SMTP_USER}>`,
+      from: `"Allah Fragancias" <${env.SMTP_USER}>`,
       to: toEmail,
       subject: 'Allah Fragancias - Restablecer Contraseña',
       html: `
@@ -107,7 +108,7 @@ interface OrderContext {
 }
 
 export const sendOrderEmail = async (toEmail: string, context: OrderContext, isPaid: boolean = false) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  if (!env.SMTP_USER || !env.SMTP_PASS) {
       console.warn("Correo no enviado: Credenciales SMTP faltantes en .env");
       return false;
   }
@@ -173,7 +174,7 @@ export const sendOrderEmail = async (toEmail: string, context: OrderContext, isP
 
   try {
     await transporter.sendMail({
-      from: `"Allah Fragancias" <${process.env.SMTP_USER}>`,
+      from: `"Allah Fragancias" <${env.SMTP_USER}>`,
       to: toEmail,
       subject: `Allah Fragancias - ${statusTitle} #${context.orderId.slice(-8)}`,
       html: htmlBody,
@@ -187,7 +188,7 @@ export const sendOrderEmail = async (toEmail: string, context: OrderContext, isP
 };
 
 export const sendAdminNotificationEmail = async (adminEmail: string, context: OrderContext, isPaid: boolean = false) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return false;
+  if (!env.SMTP_USER || !env.SMTP_PASS) return false;
   
   const statusTitle = isPaid ? "NUEVO PAGO APROBADO" : "NUEVA ORDEN RECIBIDA";
    const actionText = isPaid 
@@ -230,7 +231,7 @@ export const sendAdminNotificationEmail = async (adminEmail: string, context: Or
 
   try {
     await transporter.sendMail({
-      from: `"Allah Notificaciones" <${process.env.SMTP_USER}>`,
+      from: `"Allah Notificaciones" <${env.SMTP_USER}>`,
       to: adminEmail,
       subject: `VENTA: ${statusTitle} - ${escapeHtml(context.userName)}`,
       html: htmlBody,
