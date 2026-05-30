@@ -13,7 +13,7 @@ export default function ProductCard({ product, onClick, onAddToCart }: ProductPr
   return (
     <motion.div 
       whileHover={{ y: -10 }}
-      className="group relative p-8 border border-gold/10 hover:bg-white/5 transition-colors duration-700 flex flex-col"
+      className="group relative p-6 md:p-8 border border-gold/10 hover:bg-white/5 transition-colors duration-700 flex flex-col"
     >
       <div className="aspect-[3/4] bg-darker mb-8 overflow-hidden cursor-pointer" onClick={onClick}>
         <img 
@@ -24,9 +24,10 @@ export default function ProductCard({ product, onClick, onAddToCart }: ProductPr
         />
       </div>
       <div className="flex justify-between items-start mb-6">
-        <div className="cursor-pointer" onClick={onClick}>
-          <h3 className="font-serif text-xl text-gold mb-2">{product.name}</h3>
+        <div className="cursor-pointer min-w-0" onClick={onClick}>
+          <h3 className="font-serif text-xl text-gold mb-2 truncate">{product.name}</h3>
           <p className="text-xs text-gray-500 uppercase tracking-widest truncate max-w-[120px] md:max-w-[200px]">{product.collection}</p>
+          <p className="text-[9px] text-gray-600 uppercase tracking-widest mt-1">{product.stock > 5 ? 'En stock' : `Solo ${product.stock} uds.`}</p>
         </div>
         <span className="text-gold-light font-bold tracking-tighter text-lg whitespace-nowrap ml-4">
           ${product.price?.toFixed(2) ?? '0.00'}

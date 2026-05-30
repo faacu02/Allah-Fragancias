@@ -12,6 +12,7 @@ interface ProductDetailProps {
 
 export default function ProductDetail({ product, onBack, onAddToCart }: ProductDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
   const images = product.images?.length > 0 ? product.images : ["https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=1200"];
 
   return (
@@ -19,7 +20,7 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="min-h-screen bg-dark pt-20 pb-32"
+      className="min-h-screen bg-dark pt-20 pb-16 md:pb-32"
     >
       <nav className="fixed top-0 w-full z-50 bg-dark/60 backdrop-blur-xl flex justify-between items-center px-8 h-20 border-b border-gold/10">
         <button onClick={onBack} className="text-gold cursor-pointer hover:text-gold-light transition-colors">
@@ -30,9 +31,9 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
       </nav>
 
       <main className="max-w-7xl mx-auto px-8 pt-12">
-        <div className="flex flex-col md:flex-row gap-12 mb-32">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-12 mb-16 md:mb-32">
           <div className="w-full md:w-1/2">
-            <div className="aspect-[3/4] bg-darker overflow-hidden relative group">
+            <div className="aspect-[3/4] bg-darker overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(images[currentImageIndex])}>
               <img
                 src={images[currentImageIndex]}
                 alt={product.name}
@@ -113,6 +114,13 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
           </div>
         </div>
       </main>
+
+      {/* Zoom modal */}
+      {zoomImage && (
+        <div className="fixed inset-0 z-[300] bg-black/90 flex items-center justify-center p-4 cursor-pointer" onClick={() => setZoomImage(null)}>
+          <img src={zoomImage} alt={product.name} className="max-w-full max-h-full object-contain" />
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -37,17 +37,26 @@ export default function ClientDashboard({ onBack }: { onBack: () => void }) {
    }, []);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-dark pt-24 px-8 md:px-24 pb-32">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-dark pt-24 px-8 md:px-24 pb-16 md:pb-32">
       <button onClick={onBack} className="flex items-center gap-2 text-gold/70 hover:text-gold uppercase tracking-widest text-xs mb-12 transition-colors duration-300">
         <ArrowLeft size={16} /> Volver a la Tienda
       </button>
       <div className="mb-16">
-        <h1 className="font-serif text-5xl md:text-6xl text-white tracking-tighter mb-4">Mi Colección</h1>
+        <h1 className="font-serif text-4xl md:text-6xl text-white tracking-tighter mb-4">Mi Colección</h1>
         <p className="text-gray-400 font-light text-lg">Historial de adquisiciones y piezas encargadas.</p>
       </div>
       {loading ? (
-         <div className="flex justify-center items-center h-64 border border-gold/10">
-           <span className="text-gold uppercase tracking-[0.3em] animate-pulse">Cargando registros...</span>
+         <div className="space-y-6">
+           {[1,2,3].map((n) => (
+             <div key={n} className="border border-gold/10 bg-darker p-8 animate-pulse">
+               <div className="h-5 bg-white/10 w-1/3 mb-4" />
+               <div className="h-3 bg-white/5 w-2/3 mb-2" />
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                 <div className="h-20 bg-white/5" />
+                 <div className="h-20 bg-white/5" />
+               </div>
+             </div>
+           ))}
          </div>
       ) : orders.length === 0 ? (
          <div className="flex flex-col justify-center items-center h-64 border border-gold/10 bg-white/5">

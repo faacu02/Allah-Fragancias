@@ -8,6 +8,7 @@ export default function OrdersTab() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [previewReceipt, setPreviewReceipt] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ orderId: string; action: 'approve' | 'cancel' } | null>(null);
 
    const fetchOrders = async () => {
      setLoadingOrders(true);
@@ -24,11 +25,11 @@ export default function OrdersTab() {
 
   useEffect(() => {
     fetchOrders();
+    const interval = setInterval(fetchOrders, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleApproveOrder = async (orderId: string) => {
-     if(!window.confirm('¿Marcar pago recibido?')) return;
-     
      try {
       const res = await fetch(`/api/admin/orders/${orderId}/status`, {
          method: 'PUT',
@@ -46,23 +47,21 @@ export default function OrdersTab() {
   };
 
   const handleCancelOrder = async (orderId: string) => {
-    if(!window.confirm('¿Cancelar esta orden? Se restaurará el stock.')) return;
-    
-    try {
-     const res = await fetch(`/api/admin/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: 'cancelled' })
-     });
-      if(!res.ok) throw new Error("Error cancelling");
-      toast.success("Orden Cancelada. Stock restaurado.");
-      fetchOrders();
-    } catch(e) {
-      toast.error("Hubo un error al cancelar");
-    }
- };
+     try {
+      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+         method: 'PUT',
+         headers: { 
+           'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({ status: 'cancelled' })
+      });
+       if(!res.ok) throw new Error("Error cancelling");
+       toast.success("Orden Cancelada. Stock restaurado.");
+       fetchOrders();
+     } catch(e) {
+       toast.error("Hubo un error al cancelar");
+     }
+  };
 
   return (
     <section className="px-6 md:px-12 py-12">
@@ -133,23 +132,59 @@ export default function OrdersTab() {
                     )}
 
                     {order.status === 'pending' && (
-                      <div className="mt-6 pt-4 border-t border-gold/20 flex justify-end gap-3">
-                         <button
-                           onClick={() => handleCancelOrder(order.id)}
-                           className="border border-red-500/30 text-red-500 px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-red-500/10 transition-colors"
-                         >
-                           Cancelar
-                         </button>
-                         <button 
-                            onClick={() => handleApproveOrder(order.id)}
-                            className="bg-gold text-dark px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-gold-light transition-colors"
+                       <div className="mt-6 pt-4 border-t border-gold/20 flex justify-end gap-3">
+                          <button
+                            onClick={() => setConfirmAction({ orderId: order.id, action: 'cancel' })}
+                            className="border border-red-500/30 text-red-500 px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-red-500/10 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                          <button 
+                             onClick={() => setConfirmAction({ orderId: order.id, action: 'approve' })}
+                             className="bg-gold text-dark px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gold-light transition-colors"
                          >
                             Marcar Pago Recibido
                          </button>
-                      </div>
+                       </div>
                     )}
                  </div>
              ))}
+
+             {/* Confirm Action Modal */}
+             {confirmAction && (
+               <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4">
+                 <div className="bg-darker border border-gold/20 w-full max-w-sm p-8 relative">
+                   <h3 className="font-serif text-xl text-gold mb-4">{confirmAction.action === 'approve' ? 'Aprobar Pago' : 'Cancelar Orden'}</h3>
+                   <p className="text-gray-400 text-sm mb-6">
+                     {confirmAction.action === 'approve'
+                       ? '¿Confirmás que el pago fue recibido?'
+                       : '¿Cancelar esta orden? Se restaurará el stock.'}
+                   </p>
+                   <div className="flex gap-4">
+                     <button onClick={() => setConfirmAction(null)} className="flex-1 border border-gold/20 text-gold text-xs uppercase tracking-widest font-bold py-3 hover:bg-gold/10 transition-colors">
+                       Volver
+                     </button>
+                     <button
+                       onClick={() => {
+                         if (confirmAction.action === 'approve') {
+                           handleApproveOrder(confirmAction.orderId);
+                         } else {
+                           handleCancelOrder(confirmAction.orderId);
+                         }
+                         setConfirmAction(null);
+                       }}
+                       className={`flex-1 text-xs uppercase tracking-widest font-bold py-3 transition-colors ${
+                         confirmAction.action === 'approve'
+                           ? 'bg-green-500/10 border border-green-500 text-green-500 hover:bg-green-500/20'
+                           : 'bg-red-500/10 border border-red-500 text-red-500 hover:bg-red-500/20'
+                       }`}
+                     >
+                       {confirmAction.action === 'approve' ? 'Aprobar' : 'Cancelar Orden'}
+                     </button>
+                   </div>
+                 </div>
+               </div>
+             )}
 
              {/* Receipt preview modal */}
              {previewReceipt && (

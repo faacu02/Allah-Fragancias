@@ -91,7 +91,7 @@ export default function Home() {
        localStorage.removeItem('mirage_cart');
        window.history.replaceState({}, document.title, "/");
     } else if (status === 'failure') {
-       toast.error("Hubo un fallo cancelando el pago de Mercado Pago.");
+       toast.error("Hubo un error al procesar el pago. Intente de nuevo.");
        window.history.replaceState({}, document.title, "/");
     }
   }, []);
@@ -221,8 +221,8 @@ export default function Home() {
 
 
 
-              <section className="py-32 px-8 md:px-24 bg-dark">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+              <section className="py-16 md:py-32 px-8 md:px-24 bg-dark">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
                   <div className="relative">
                     <div className="absolute -top-10 -left-10 w-40 h-40 border border-gold/10 -z-10"></div>
                     <img 
@@ -244,7 +244,7 @@ export default function Home() {
               </section>
             </main>
 
-            <footer className="w-full py-20 px-8 flex flex-col items-center gap-6 bg-darker border-t border-gold/10">
+            <footer className="w-full py-12 md:py-20 px-8 flex flex-col items-center gap-6 bg-darker border-t border-gold/10">
               <div className="font-serif text-xl text-gold tracking-[0.2em] mb-4 uppercase">ALLAH FRAGANCIAS</div>
               <div className="flex flex-wrap justify-center gap-8 md:gap-12 mb-8">
                 {['Privacy Policy', 'Terms of Service', 'Shipping', 'Contact'].map((item) => (
@@ -325,7 +325,7 @@ export default function Home() {
             >
               <div className="flex justify-between items-center mb-12">
                 <span className="text-gold font-serif text-xl tracking-[0.2em] uppercase">Allah</span>
-                <button onClick={() => setIsMenuOpen(false)} className="text-gray-500 hover:text-gold transition-colors">
+                <button onClick={() => setIsMenuOpen(false)} className="text-gray-500 hover:text-gold transition-colors" aria-label="Cerrar menú">
                   <X size={20} />
                 </button>
               </div>
@@ -402,10 +402,10 @@ export default function Home() {
                   <p className="text-gold text-sm mb-4">Contraseña actualizada exitosamente</p>
                   <p className="text-gray-400 text-xs">Ahora podés iniciar sesión con tu nueva contraseña.</p>
                   <button
-                    onClick={() => setShowResetPassword(false)}
+                    onClick={() => { setShowResetPassword(false); setShowAuthModal(true); }}
                     className="mt-8 text-gold text-xs uppercase tracking-widest hover:underline"
                   >
-                    Cerrar
+                    Iniciar Sesión
                   </button>
                 </div>
               ) : (
@@ -440,6 +440,13 @@ export default function Home() {
                     Ingresá tu nueva contraseña
                   </p>
                   {resetError && <div className="text-red-500 text-xs text-center border border-red-500/20 py-2 bg-red-500/10 mb-6">{resetError}</div>}
+                  <button
+                    type="button"
+                    onClick={() => { setShowResetPassword(false); setShowAuthModal(true); }}
+                    className="text-gray-500 text-[10px] uppercase tracking-widest hover:text-gold transition-colors mb-6 block"
+                  >
+                    ← Volver a Iniciar Sesión
+                  </button>
                   <div className="relative group mb-10">
                     <input
                       type="password" id="reset-password" value={resetPassword}

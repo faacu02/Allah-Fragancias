@@ -67,14 +67,14 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-darker border-t border-gold/15 flex">
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`flex-1 flex flex-col items-center gap-1 py-3 text-[9px] uppercase tracking-widest transition-colors ${activeTab === 'inventory' ? 'text-gold' : 'text-gray-600'}`}
+          className={`flex-1 flex flex-col items-center gap-1 py-4 text-[10px] uppercase tracking-widest transition-colors ${activeTab === 'inventory' ? 'text-gold' : 'text-gray-600'}`}
         >
           <Package size={18} />
           Inventario
         </button>
         <button
           onClick={() => setActiveTab('orders')}
-          className={`flex-1 flex flex-col items-center gap-1 py-3 text-[9px] uppercase tracking-widest transition-colors ${activeTab === 'orders' ? 'text-gold' : 'text-gray-600'}`}
+          className={`flex-1 flex flex-col items-center gap-1 py-4 text-[10px] uppercase tracking-widest transition-colors ${activeTab === 'orders' ? 'text-gold' : 'text-gray-600'}`}
         >
           <FileText size={18} />
           Órdenes

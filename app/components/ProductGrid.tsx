@@ -35,8 +35,8 @@ export default function ProductGrid({ onProductClick, onAddToCart }: ProductGrid
   }, []);
 
   return (
-    <section id="coleccion" className="py-32 px-8 md:px-24 bg-dark">
-      <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
+    <section id="coleccion" className="py-16 md:py-32 px-8 md:px-24 bg-dark">
+      <div className="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-24 gap-8">
         <div>
           <span className="text-gold text-xs font-bold uppercase tracking-[0.4em] mb-4 block">Selected Works</span>
           <h2 className="font-serif text-4xl md:text-5xl text-white tracking-tighter">Colección Obsidian</h2>
@@ -47,7 +47,15 @@ export default function ProductGrid({ onProductClick, onAddToCart }: ProductGrid
       </div>
       
       {loading ? (
-        <div className="text-center text-gold/50 tracking-widest uppercase">Cargando colección...</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[1,2,3].map((n) => (
+            <div key={n} className="p-6 md:p-8 border border-gold/10 animate-pulse">
+              <div className="aspect-[3/4] bg-white/5 mb-8" />
+              <div className="h-5 bg-white/10 w-3/4 mb-2" />
+              <div className="h-3 bg-white/5 w-1/2" />
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {products.map((product) => (

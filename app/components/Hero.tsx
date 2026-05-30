@@ -25,7 +25,7 @@ export default function Hero({ onExploreClick }: HeroProps) {
   }, []);
 
   return (
-    <section className="relative h-screen flex items-center overflow-hidden">
+    <section className="relative min-h-[500px] h-screen flex items-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         {carouselImages.map((src, idx) => (
           <img
@@ -44,7 +44,7 @@ export default function Hero({ onExploreClick }: HeroProps) {
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-gold w-6' : 'bg-white/40 hover:bg-white/70'}`}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-gold w-7' : 'bg-white/40 hover:bg-white/70'}`}
           />
         ))}
       </div>

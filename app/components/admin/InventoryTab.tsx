@@ -68,6 +68,7 @@ export default function InventoryTab() {
       if (!res.ok) throw new Error();
       const updated = await res.json();
       setProducts(products.map(p => p.id === id ? updated : p));
+      toast.success('Guardado');
     } catch {
       console.error("Error actualizando producto");
       toast.error("Error al actualizar producto");
@@ -303,8 +304,8 @@ export default function InventoryTab() {
                       <span className={`text-[8px] px-1.5 py-0.5 uppercase font-bold ${product.status === 'LOW' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>{product.status}</span>
                     </div>
                     <div className="flex gap-2 mt-3">
-                      <button onClick={() => openEditModal(product)} className="flex-1 border border-gold/20 text-gold text-[9px] uppercase tracking-widest font-bold py-2 hover:bg-gold/10 transition-colors">Editar</button>
-                      <button onClick={() => setConfirmDelete({ id: product.id, name: product.name })} className="px-3 border border-red-500/30 text-red-500 text-[9px] uppercase hover:bg-red-500/10 transition-colors"><Trash2 size={14} /></button>
+                      <button onClick={() => openEditModal(product)} className="flex-1 border border-gold/20 text-gold text-[10px] uppercase tracking-widest font-bold py-3 hover:bg-gold/10 transition-colors">Editar</button>
+                      <button onClick={() => setConfirmDelete({ id: product.id, name: product.name })} className="px-3 border border-red-500/30 text-red-500 text-[10px] uppercase hover:bg-red-500/10 transition-colors"><Trash2 size={14} /></button>
                     </div>
                   </div>
                 </div>
@@ -451,7 +452,7 @@ export default function InventoryTab() {
                   placeholder="Descripción del perfume..." rows={3} />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest text-gold/70">Precio ($)</label>
                   <input type="number" value={newProduct.price}
