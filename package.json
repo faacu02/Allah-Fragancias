@@ -11,6 +11,9 @@
     "test:watch": "vitest",
     "postinstall": "prisma generate"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"

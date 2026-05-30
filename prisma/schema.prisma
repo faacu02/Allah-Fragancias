@@ -7,45 +7,76 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ProductStatus {
+  OK
+  LOW
+}
+
+enum UserRole {
+  admin
+  cliente
+}
+
+enum PaymentMethod {
+  efectivo
+  transferencia
+}
+
+enum OrderStatus {
+  pending
+  approved
+  cancelled
+}
+
 model Product {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
   collection  String
   price       Float
   stock       Int
-  status      String   @default("OK") // "OK" | "LOW"
+  status      ProductStatus @default(OK)
   description String?
-  images      String[] @default([])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  images      String[]      @default([])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   orderItems  OrderItem[]
+
+  @@index([status])
+  @@index([collection])
 }
 
 model User {
-  id               String    @id @default(cuid())
-  email            String    @unique
+  id               String      @id @default(cuid())
+  email            String      @unique
   password         String
   name             String?
   phone            String?
-  role             String    @default("cliente") // "admin" o "cliente"
-  resetToken       String?   @unique
+  role             UserRole    @default(cliente)
+  resetToken       String?     @unique
   resetTokenExpiry DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
   orders           Order[]
+
+  @@index([email])
+  @@index([role])
 }
 
 model Order {
-  id             String      @id @default(cuid())
+  id             String        @id @default(cuid())
   userId         String?
-  user           User?       @relation(fields: [userId], references: [id])
+  user           User?         @relation(fields: [userId], references: [id])
   total          Float
-  paymentMethod  String      // "efectivo" | "transferencia"
-  status         String      @default("pending") // "pending" | "approved" | "cancelled"
-  paymentReceipt String?     // Cloudinary URL of the transfer receipt image
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  paymentMethod  PaymentMethod
+  status         OrderStatus   @default(pending)
+  paymentReceipt String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
   items          OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -56,4 +87,7 @@ model OrderItem {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
   quantity  Int
   price     Float
+
+  @@index([orderId])
+  @@index([productId])
 }
