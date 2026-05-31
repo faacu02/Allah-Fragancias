@@ -2,9 +2,10 @@
 
 import { Eye, XCircle } from 'lucide-react';
 import Image from 'next/image';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { csrfFetch } from '@/lib/csrf-client';
 import toast from 'react-hot-toast';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 
 export default function OrdersTab() {
   interface OrderItem {
@@ -31,6 +32,16 @@ export default function OrdersTab() {
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [previewReceipt, setPreviewReceipt] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ orderId: string; action: 'approve' | 'cancel' } | null>(null);
+  const confirmFocusRef = useFocusTrap(!!confirmAction);
+
+  const handleConfirmKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && confirmAction) setConfirmAction(null);
+  }, [confirmAction]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleConfirmKeyDown);
+    return () => document.removeEventListener('keydown', handleConfirmKeyDown);
+  }, [handleConfirmKeyDown]);
 
    const fetchOrders = async () => {
      setLoadingOrders(true);
@@ -177,8 +188,8 @@ export default function OrdersTab() {
              ))}
 
              {/* Confirm Action Modal */}
-             {confirmAction && (
-               <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Confirmar acción">
+              {confirmAction && (
+                <div ref={confirmFocusRef} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Confirmar acción">
                  <div className="bg-darker border border-gold/20 w-full max-w-sm p-8 relative">
                    <h3 className="font-serif text-xl text-gold mb-4">{confirmAction.action === 'approve' ? 'Aprobar Pago' : 'Cancelar Orden'}</h3>
                    <p className="text-gray-400 text-sm mb-6">

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const { items, paymentMethod } = await request.json();
 
-    if (!items || items.length === 0) {
+    if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'El carrito está vacío' }, { status: 400 });
     }
 
@@ -49,18 +49,27 @@ export async function POST(request: NextRequest) {
     const stockErrors: string[] = [];
 
     for (const item of items) {
+      const qty = Math.floor(Number(item.quantity));
+      if (!Number.isFinite(qty) || qty <= 0) {
+        stockErrors.push(`Cantidad inválida para "${item.title || item.productId || 'producto desconocido'}"`);
+        continue;
+      }
+      if (!item.productId) {
+        stockErrors.push('Producto inválido (sin identificador)');
+        continue;
+      }
       const dbProduct = dbProductMap.get(item.productId);
       if (!dbProduct) {
         stockErrors.push(`Producto "${item.title || item.productId}" no encontrado`);
         continue;
       }
-      if (dbProduct.stock < item.quantity) {
-        stockErrors.push(`${dbProduct.name} tiene solo ${dbProduct.stock} unidades (pediste ${item.quantity})`);
+      if (dbProduct.stock < qty) {
+        stockErrors.push(`${dbProduct.name} tiene solo ${dbProduct.stock} unidades (pediste ${qty})`);
         continue;
       }
       trustedItems.push({
         productId: dbProduct.id,
-        quantity: item.quantity,
+        quantity: qty,
         price: dbProduct.price, // Always use DB price
         title: dbProduct.name
       });

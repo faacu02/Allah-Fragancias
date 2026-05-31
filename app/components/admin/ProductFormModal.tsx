@@ -2,7 +2,8 @@
 
 import { X, Upload } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -30,6 +31,16 @@ export default function ProductFormModal({ isOpen, editingId, initialData, onClo
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const focusRef = useFocusTrap(isOpen);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && isOpen) onClose();
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const validate = (): boolean => {
     const errs: string[] = [];
@@ -82,7 +93,7 @@ export default function ProductFormModal({ isOpen, editingId, initialData, onClo
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start justify-center p-4 overflow-y-auto pt-20 pb-20"
+    <div ref={focusRef} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start justify-center p-4 overflow-y-auto pt-20 pb-20"
       role="dialog" aria-modal="true" aria-label={editingId ? 'Editar Perfume' : 'Añadir Nueva Fragancia'}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
