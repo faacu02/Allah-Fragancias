@@ -42,9 +42,9 @@ export default function InventoryTab() {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await fetch('/api/products');
+      const res = await fetch('/api/products?limit=50');
       const data = await res.json();
-      setProducts(data);
+      setProducts(Array.isArray(data) ? data : data.products || []);
     } catch {
       toast.error('Error al cargar productos');
     } finally {
