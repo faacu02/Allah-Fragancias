@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
         }
       }
     });
-    return NextResponse.json(orders);
+    const response = NextResponse.json(orders);
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
   } catch (error) {
     return NextResponse.json({ error: 'Error obteniendo órdenes admin' }, { status: 500 });
   }

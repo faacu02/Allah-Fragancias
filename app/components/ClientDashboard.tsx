@@ -60,10 +60,11 @@ export default function ClientDashboard({ onBack }: { onBack: () => void }) {
            ))}
          </div>
       ) : orders.length === 0 ? (
-         <div className="flex flex-col justify-center items-center h-64 border border-gold/10 bg-white/5">
-           <Package size={64} className="text-gold/30 mb-6" />
-           <p className="text-gray-400 uppercase tracking-widest text-sm text-center">Aún no tienes perfumes en tu historial.</p>
-         </div>
+          <div className="flex flex-col justify-center items-center h-64 border border-gold/10 bg-white/5">
+            <Package size={64} className="text-gold/30 mb-6" />
+            <p className="text-gray-400 uppercase tracking-widest text-sm text-center mb-6">Aún no tienes perfumes en tu historial.</p>
+            <button onClick={onBack} className="bg-gold text-dark text-xs uppercase tracking-widest font-bold py-4 px-8 hover:opacity-90 transition-opacity">Explorar Colección</button>
+          </div>
       ) : (
         <div className="space-y-12">
           {orders.map(order => (
