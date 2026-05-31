@@ -2,13 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
+import { createRatelimit } from '@/lib/rate-limit';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const receiptRatelimit = createRatelimit(5, 60);
+
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return request.headers.get('x-real-ip') || 'unknown';
+}
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = verifyAuth(request);
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+
+  const ip = getClientIp(request);
+  const { success } = await receiptRatelimit.limit(ip);
+  if (!success) return NextResponse.json({ error: 'Demasiadas solicitudes. Intenta de nuevo más tarde.' }, { status: 429 });
 
   try {
     const { id: orderId } = await params;

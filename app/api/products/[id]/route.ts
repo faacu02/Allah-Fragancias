@@ -48,6 +48,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         if (updateData.stock !== undefined) {
           updateData.stock = parseInt(updateData.stock, 10);
           if (isNaN(updateData.stock)) return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
+          if (updateData.stock < 0) return NextResponse.json({ error: 'El stock no puede ser negativo' }, { status: 400 });
           updateData.status = updateData.stock < 10 ? 'LOW' : 'OK';
         }
         if (updateData.price !== undefined) {
@@ -78,6 +79,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       if (stock !== null && stock !== undefined) {
         const parsed = parseInt(stock, 10);
         if (isNaN(parsed)) return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
+        if (parsed < 0) return NextResponse.json({ error: 'El stock no puede ser negativo' }, { status: 400 });
         updateData.stock = parsed;
         updateData.status = parsed < 10 ? 'LOW' : 'OK';
       }
