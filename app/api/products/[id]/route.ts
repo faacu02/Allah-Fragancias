@@ -86,9 +86,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         }
       }
 
-      const files = formData.getAll('newImages') as File[];
+      const fileEntries = formData.getAll('newImages').filter((f): f is File => f instanceof File);
       const errors: string[] = [];
-      const validFiles = files.filter(f => {
+      const validFiles = fileEntries.filter(f => {
         if (f.size <= 0) return false;
         const err = validateFile(f);
         if (err) { errors.push(err); return false; }

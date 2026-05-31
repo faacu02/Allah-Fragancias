@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { csrfFetch } from '@/lib/csrf-client';
 import toast from 'react-hot-toast';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 
 interface ResetPasswordModalProps {
   token: string;
@@ -12,8 +13,10 @@ interface ResetPasswordModalProps {
 }
 
 export default function ResetPasswordModal({ token, onClose, onLoginRedirect }: ResetPasswordModalProps) {
+  const focusRef = useFocusTrap(true);
   return (
     <motion.div
+      ref={focusRef}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
