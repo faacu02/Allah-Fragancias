@@ -28,7 +28,7 @@ function ProductCard({ product, onClick, onAddToCart }: ProductProps) {
       whileHover={{ y: -10 }}
       className="group relative p-6 md:p-8 border border-gold/10 hover:bg-white/5 transition-colors duration-700 flex flex-col"
     >
-      <div className="aspect-[3/4] bg-darker mb-8 overflow-hidden cursor-pointer relative" onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}>
+      <button className="aspect-[3/4] bg-darker mb-8 overflow-hidden cursor-pointer relative w-full text-left" onClick={onClick} aria-label={`Ver ${product.name}`}>
         <Image 
           src={product.images?.[0] || "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80"} 
           alt={product.name}
@@ -39,13 +39,13 @@ function ProductCard({ product, onClick, onAddToCart }: ProductProps) {
           placeholder="blur"
           blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8wNPvd7POQAAAABJRU5ErkJggg=="
         />
-      </div>
+      </button>
       <div className="flex justify-between items-start mb-6">
-        <div className="cursor-pointer min-w-0" onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}>
+        <button className="min-w-0 text-left" onClick={onClick} aria-label={`Ver ${product.name}`}>
           <h3 className="font-serif text-xl text-gold mb-2 truncate">{product.name}</h3>
           <p className="text-xs text-gray-400 uppercase tracking-widest truncate max-w-[120px] md:max-w-[200px]">{product.collection}</p>
           <p className="text-[10px] text-gray-600 uppercase tracking-widest mt-1">{product.stock > 5 ? 'En stock' : `Solo ${product.stock} uds.`}</p>
-        </div>
+        </button>
         <span className="text-gold-light font-bold tracking-tighter text-lg whitespace-nowrap ml-4">
           ${product.price?.toFixed(2) ?? '0.00'}
         </span>

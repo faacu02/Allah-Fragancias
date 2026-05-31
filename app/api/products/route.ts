@@ -13,12 +13,41 @@ function validateFile(file: File): string | null {
   return null;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const products = await prisma.product.findMany({
-      orderBy: { createdAt: 'desc' }
-    });
-    return NextResponse.json(products);
+    const { searchParams } = request.nextUrl;
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '9', 10)));
+    const search = searchParams.get('search')?.trim() || '';
+    const collection = searchParams.get('collection')?.trim() || '';
+
+    const where: Record<string, unknown> = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { collection: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    if (collection) {
+      where.collection = collection;
+    }
+
+    const [products, total, collections] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+      prisma.product.findMany({
+        select: { collection: true },
+        distinct: ['collection'],
+        orderBy: { collection: 'asc' },
+      }),
+    ]);
+
+    return NextResponse.json({ products, total, page, limit, collections: collections.map(c => c.collection) });
   } catch (error) {
     return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 });
   }

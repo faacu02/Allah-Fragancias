@@ -34,13 +34,17 @@ export default function OrdersTab() {
 
    const fetchOrders = async () => {
      setLoadingOrders(true);
-     try {
-       const res = await fetch('/api/admin/orders');
-       const data = await res.json();
-       if(res.ok) setOrders(data);
-     } catch (e) {
-       toast.error("Error cargando órdenes");
-     } finally {
+      try {
+        const res = await fetch('/api/admin/orders');
+        const data = await res.json();
+        if(res.ok) {
+          setOrders(data);
+        } else {
+          toast.error(data.error || 'Error cargando órdenes');
+        }
+      } catch (e) {
+        toast.error("Error cargando órdenes");
+      } finally {
        setLoadingOrders(false);
      }
    };
