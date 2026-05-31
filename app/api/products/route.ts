@@ -57,6 +57,9 @@ export async function POST(request: NextRequest) {
   const user = verifyAdmin(request);
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > 52_428_800) return NextResponse.json({ error: 'Solicitud demasiado grande' }, { status: 413 });
+
   try {
     const formData = await request.formData();
     let images: string[] = [];

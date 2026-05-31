@@ -84,6 +84,28 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         return updated;
       });
 
+      const cancelContext = {
+        orderId: order.id,
+        userName: order.user?.name || 'Cliente',
+        phone: order.user?.phone || '',
+        total: order.total,
+        paymentMethod: order.paymentMethod,
+        items: order.items.map(item => ({
+          productId: item.productId,
+          title: item.product?.name || 'Producto',
+          quantity: item.quantity,
+          price: item.price
+        }))
+      };
+
+      if (order.user?.email) {
+        try { await sendOrderEmail(order.user.email, cancelContext, false); } catch (e) { console.error('Error enviando email:', e); }
+      }
+      try {
+        const adminUser = await prisma.user.findFirst({ where: { role: 'admin' } });
+        if (adminUser) { await sendAdminNotificationEmail(adminUser.email, cancelContext, false); }
+      } catch (e) { console.error('Error notificando admin:', e); }
+
       return NextResponse.json(updatedOrder);
     }
 

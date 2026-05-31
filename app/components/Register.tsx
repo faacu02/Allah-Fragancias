@@ -13,7 +13,7 @@ interface RegisterProps {
 
 export default function Register({ onClose, onSuccess }: RegisterProps) {
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', phone: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
@@ -59,6 +59,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) { setError('El email no es válido'); return; }
       if (!formData.password || formData.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return; }
+      if (formData.password !== formData.confirmPassword) { setError('Las contraseñas no coinciden'); return; }
       if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) { setError('El teléfono contiene caracteres inválidos'); return; }
     } else {
       if (!formData.email.trim()) { setError('El email es requerido'); return; }
@@ -73,7 +74,7 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
       const res = await csrfFetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ name: formData.name, email: formData.email, password: formData.password, phone: formData.phone })
       });
 
       const data = await res.json();
@@ -205,6 +206,15 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                     </label>
                   </div>
 
+                  <div className="relative group">
+                    <input type="password" id="confirm-password" value={formData.confirmPassword}
+                      onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                      className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
+                      placeholder="Confirmar Contraseña" required autoComplete="new-password" />
+                    <label htmlFor="confirm-password" className="absolute left-0 top-3 text-gray-400 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
+                      Confirmar Contraseña
+                    </label>
+                  </div>
                   <div className="relative group">
                     <input type="password" id="password" value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
