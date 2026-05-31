@@ -71,12 +71,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         });
 
         for (const item of order.items) {
+          const restored = await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } }
+          });
           await tx.product.update({
             where: { id: item.productId },
-            data: {
-              stock: { increment: item.quantity },
-              status: 'OK'
-            }
+            data: { status: restored.stock < 10 ? 'LOW' : 'OK' }
           });
         }
 
