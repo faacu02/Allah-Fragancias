@@ -9,7 +9,6 @@ import ProductGrid from './components/ProductGrid';
 import Image from 'next/image';
 import { csrfFetch } from '@/lib/csrf-client';
 import { useFocusTrap } from '@/lib/useFocusTrap';
-import { useProducts } from '@/lib/product-context';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Package, FileText, User } from 'lucide-react';
 import type { CartItem } from './components/CartSidebar';
@@ -63,7 +62,6 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState<{ orderId: string; paymentMethod: string; bankDetails?: BankDetails } | null>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
-  const { products: allProducts } = useProducts();
   const [resetToken, setResetToken] = useState('');
   const [confirmLogout, setConfirmLogout] = useState(false);
   const mobileMenuRef = useFocusTrap(isMenuOpen);
@@ -138,24 +136,30 @@ export default function Home() {
     return () => window.removeEventListener('popstate', handlePop);
   }, []);
 
-  // Reconcile cart with fresh product data
+  // Reconcile cart with fresh product data (full list, not paginated)
   useEffect(() => {
-    if (!allProducts.length) return;
-    setCartItems(prev => {
-      const productMap = new Map<string, ProductData>(allProducts.map(p => [p.id, p]));
-      const reconciled = prev
-        .map(item => {
-          const product = productMap.get(item.productId);
-          if (!product || product.stock <= 0) return null;
-          return { ...item, stock: product.stock, price: product.price };
-        })
-        .filter((x): x is CartItem => x !== null);
-      if (reconciled.length !== prev.length) {
-        toast('Algunos productos fueron removidos por falta de stock', { icon: '⚠️' });
-      }
-      return reconciled;
-    });
-  }, [allProducts]);
+    fetch('/api/products?limit=50')
+      .then(r => r.json())
+      .then(data => {
+        const all = Array.isArray(data) ? data : data?.products;
+        if (!Array.isArray(all) || !all.length) return;
+        setCartItems(prev => {
+          const productMap = new Map<string, ProductData>(all.map(p => [p.id, p]));
+          const reconciled = prev
+            .map(item => {
+              const product = productMap.get(item.productId);
+              if (!product || product.stock <= 0) return null;
+              return { ...item, stock: product.stock, price: product.price };
+            })
+            .filter((x): x is CartItem => x !== null);
+          if (reconciled.length !== prev.length) {
+            toast('Algunos productos fueron removidos por falta de stock', { icon: '⚠️' });
+          }
+          return reconciled;
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     try {
