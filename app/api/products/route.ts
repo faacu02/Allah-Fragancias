@@ -61,18 +61,19 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     let images: string[] = [];
 
-    const name = formData.get('name') as string | null;
-    const collection = formData.get('collection') as string | null;
-    const priceStr = formData.get('price') as string | null;
-    const stockStr = formData.get('stock') as string | null;
-    const description = formData.get('description') as string | null;
+    const nameRaw = formData.get('name');
+    if (!nameRaw || typeof nameRaw !== 'string' || !nameRaw.trim()) return NextResponse.json({ error: 'El nombre es requerido' }, { status: 400 });
+    const name = nameRaw;
+    const collectionRaw = formData.get('collection');
+    if (!collectionRaw || typeof collectionRaw !== 'string' || !collectionRaw.trim()) return NextResponse.json({ error: 'La colección es requerida' }, { status: 400 });
+    const collection = collectionRaw;
+    const priceRaw = formData.get('price');
+    const stockRaw = formData.get('stock');
+    const priceStr = typeof priceRaw === 'string' ? priceRaw : null;
+    const stockStr = typeof stockRaw === 'string' ? stockRaw : null;
+    const description = formData.get('description');
 
-    if (!name || !name.trim()) {
-      return NextResponse.json({ error: 'El nombre es requerido' }, { status: 400 });
-    }
-    if (!collection || !collection.trim()) {
-      return NextResponse.json({ error: 'La colección es requerida' }, { status: 400 });
-    }
+    if (description && typeof description !== 'string') return NextResponse.json({ error: 'Descripción inválida' }, { status: 400 });
     if (!priceStr) {
       return NextResponse.json({ error: 'El precio es requerido' }, { status: 400 });
     }
@@ -89,7 +90,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'El stock debe ser un número válido' }, { status: 400 });
     }
 
-    const existingImagesRaw = formData.get('existingImages') as string | null;
+    const existingImagesRaw = formData.get('existingImages');
+    if (existingImagesRaw !== null && typeof existingImagesRaw !== 'string') return NextResponse.json({ error: 'Formato de imágenes inválido' }, { status: 400 });
     if (existingImagesRaw) {
       try { images = JSON.parse(existingImagesRaw); } catch (e) {
         return NextResponse.json({ error: 'Formato de imágenes inválido' }, { status: 400 });
@@ -124,7 +126,7 @@ export async function POST(request: NextRequest) {
         price,
         stock,
         status: stock < 10 ? 'LOW' : 'OK',
-        description: description || null,
+        description: description && typeof description === 'string' ? description.trim() || null : null,
         images
       }
     });

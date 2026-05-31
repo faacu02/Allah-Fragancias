@@ -35,30 +35,37 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     
     let updateData: Record<string, any> = {};
     
-    if (contentType.includes('application/json')) {
-      const data = await request.json();
-      // Whitelist allowed fields only
-      for (const key of ALLOWED_UPDATE_FIELDS) {
-        if (data[key] !== undefined) {
-          updateData[key] = data[key];
+      if (contentType.includes('application/json')) {
+        const data = await request.json();
+        for (const key of ALLOWED_UPDATE_FIELDS) {
+          if (data[key] !== undefined) {
+            updateData[key] = data[key];
+          }
         }
-      }
-      if (updateData.stock !== undefined) {
-        updateData.stock = parseInt(updateData.stock, 10);
-        if (isNaN(updateData.stock)) return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
-        updateData.status = updateData.stock < 10 ? 'LOW' : 'OK';
-      }
-      if (updateData.price !== undefined) {
-        updateData.price = parseFloat(updateData.price);
-        if (isNaN(updateData.price)) return NextResponse.json({ error: 'Precio inválido' }, { status: 400 });
-      }
+        if (updateData.status !== undefined && updateData.status !== 'OK' && updateData.status !== 'LOW') {
+          return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
+        }
+        if (updateData.stock !== undefined) {
+          updateData.stock = parseInt(updateData.stock, 10);
+          if (isNaN(updateData.stock)) return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
+          updateData.status = updateData.stock < 10 ? 'LOW' : 'OK';
+        }
+        if (updateData.price !== undefined) {
+          updateData.price = parseFloat(updateData.price);
+          if (isNaN(updateData.price)) return NextResponse.json({ error: 'Precio inválido' }, { status: 400 });
+        }
     } else {
       const formData = await request.formData();
-      const name = formData.get('name') as string | null;
-      const collection = formData.get('collection') as string | null;
-      const price = formData.get('price') as string | null;
-      const stock = formData.get('stock') as string | null;
-      const description = formData.get('description') as string | null;
+      const nameRaw = formData.get('name');
+      const collectionRaw = formData.get('collection');
+      const name = nameRaw && typeof nameRaw === 'string' ? nameRaw : null;
+      const collection = collectionRaw && typeof collectionRaw === 'string' ? collectionRaw : null;
+      const price = formData.get('price');
+      const stock = formData.get('stock');
+      const description = formData.get('description');
+      if (price !== null && typeof price !== 'string') return NextResponse.json({ error: 'Precio inválido' }, { status: 400 });
+      if (stock !== null && typeof stock !== 'string') return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
+      if (description !== null && typeof description !== 'string') return NextResponse.json({ error: 'Descripción inválida' }, { status: 400 });
 
       if (name) updateData.name = name;
       if (collection) updateData.collection = collection;
@@ -78,7 +85,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       let currentImages: string[] = [];
       let hasImageUpdates = false;
 
-      const existingImagesRaw = formData.get('existingImages') as string | null;
+      const existingImagesRaw = formData.get('existingImages');
+      if (existingImagesRaw !== null && typeof existingImagesRaw !== 'string') return NextResponse.json({ error: 'Formato de imágenes inválido' }, { status: 400 });
       if (existingImagesRaw !== null) {
         hasImageUpdates = true;
         try { currentImages = JSON.parse(existingImagesRaw); } catch (e) {
