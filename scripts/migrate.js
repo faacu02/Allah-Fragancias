@@ -1,12 +1,17 @@
-const { execSync } = require('child_process');
-try {
-  execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-} catch (e) {
-  const msg = e.stderr?.toString() || e.stdout?.toString() || e.message;
+const { spawnSync } = require('child_process');
+const result = spawnSync('npx', ['prisma', 'migrate', 'deploy'], {
+  stdio: 'pipe',
+  shell: true,
+});
+const stdout = (result.stdout || '').toString();
+const stderr = (result.stderr || '').toString();
+if (stdout) process.stdout.write(stdout);
+if (stderr) process.stderr.write(stderr);
+if (result.status !== 0) {
+  const msg = stdout + stderr;
   if (msg.includes('P1001')) {
     console.warn('\n⚠ Base de datos no disponible, migraciones omitidas\n');
     process.exit(0);
   }
-  console.error('\n✖ Error en migraciones:\n', msg);
-  process.exit(1);
+  process.exit(result.status || 1);
 }
