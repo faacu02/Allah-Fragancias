@@ -59,6 +59,11 @@ export default function ProductFormModal({ isOpen, editingId, initialData, onClo
   };
 
   useEffect(() => {
+    const urls = newImageFiles.map(f => URL.createObjectURL(f));
+    return () => urls.forEach(u => URL.revokeObjectURL(u));
+  }, [newImageFiles]);
+
+  useEffect(() => {
     if (isOpen) {
       if (initialData) {
         setProductName(initialData.name);

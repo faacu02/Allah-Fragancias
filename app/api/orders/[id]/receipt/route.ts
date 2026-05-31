@@ -18,6 +18,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const user = verifyAuth(request);
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > 10_485_760) return NextResponse.json({ error: 'Solicitud demasiado grande' }, { status: 413 });
+
   const ip = getClientIp(request);
   const { success } = await receiptRatelimit.limit(ip);
   if (!success) return NextResponse.json({ error: 'Demasiadas solicitudes. Intenta de nuevo más tarde.' }, { status: 429 });
@@ -29,6 +32,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!order) return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 });
     if (order.userId !== user.id) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    }
+    if (order.status !== 'pending') {
+      return NextResponse.json({ error: 'La orden no está pendiente' }, { status: 400 });
     }
 
     const formData = await request.formData();

@@ -7,6 +7,7 @@ import { X, Trash2, ShoppingBag, Banknote, CheckCircle, Copy, Check, Upload, Ima
 import toast from 'react-hot-toast';
 import { useFocusTrap } from '@/lib/useFocusTrap';
 import { csrfFetch } from '@/lib/csrf-client';
+import { env } from '@/lib/env';
 
 export interface CartItem {
   productId: string;
@@ -28,7 +29,7 @@ interface CartSidebarProps {
   checkoutSuccess: { orderId: string; paymentMethod: string; bankDetails?: { bankName: string; accountType: string; accountNumber: string; alias: string; cuit: string; holderName: string } } | null;
 }
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5491123456789';
+const WHATSAPP_NUMBER = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
 export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUpdateQuantity, onCheckout, isProcessing, checkoutSuccess }: CartSidebarProps) {
   const [copied, setCopied] = useState(false);

@@ -6,6 +6,8 @@ import { checkoutRatelimit } from '@/lib/rate-limit';
 import { env } from '@/lib/env';
 
 export async function POST(request: NextRequest) {
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > 1_048_576) return NextResponse.json({ error: 'Solicitud demasiado grande' }, { status: 413 });
   try {
     // Rate limiting
     if (checkoutRatelimit) {

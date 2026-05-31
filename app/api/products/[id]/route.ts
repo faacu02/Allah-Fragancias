@@ -29,6 +29,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const user = verifyAdmin(request);
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > 52_428_800) return NextResponse.json({ error: 'Solicitud demasiado grande' }, { status: 413 });
+
   try {
     const { id } = await params;
     const contentType = request.headers.get('content-type') || '';
@@ -114,7 +117,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
 
       if (hasImageUpdates) {
-        updateData.images = currentImages;
+        updateData.images = [...new Set(currentImages)];
       }
     }
 
