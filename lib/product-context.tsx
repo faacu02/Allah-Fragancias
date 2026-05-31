@@ -46,15 +46,54 @@ const defaultCtx: ProductContextValue = {
 
 const ProductContext = createContext<ProductContextValue>(defaultCtx);
 
+function readUrlParams() {
+  if (typeof window === 'undefined') return { page: 1, search: '', collection: '' };
+  const p = new URLSearchParams(window.location.search);
+  return {
+    page: Math.max(1, parseInt(p.get('page') || '1', 10)),
+    search: p.get('search')?.trim() || '',
+    collection: p.get('collection')?.trim() || '',
+  };
+}
+
+function writeUrlParams(page: number, search: string, collection: string) {
+  if (typeof window === 'undefined') return;
+  const p = new URLSearchParams();
+  if (page > 1) p.set('page', String(page));
+  if (search) p.set('search', search);
+  if (collection) p.set('collection', collection);
+  const qs = p.toString();
+  const url = qs ? `/?${qs}` : '/';
+  window.history.replaceState(null, '', url);
+}
+
 export function ProductProvider({ children }: { children: ReactNode }) {
+  const initial = readUrlParams();
   const [products, setProducts] = useState<ProductData[]>([]);
   const [total, setTotal] = useState(0);
   const [collections, setCollections] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [collectionFilter, setCollectionFilter] = useState('');
+  const [page, setPageState] = useState(initial.page);
+  const [search, setSearchState] = useState(initial.search);
+  const [collectionFilter, setCollectionFilterState] = useState(initial.collection);
+
+  const setPage = useCallback((p: number) => {
+    setPageState(p);
+    writeUrlParams(p, search, collectionFilter);
+  }, [search, collectionFilter]);
+
+  const setSearch = useCallback((s: string) => {
+    setSearchState(s);
+    setPageState(1);
+    writeUrlParams(1, s, collectionFilter);
+  }, [collectionFilter]);
+
+  const setCollectionFilter = useCallback((c: string) => {
+    setCollectionFilterState(c);
+    setPageState(1);
+    writeUrlParams(1, search, c);
+  }, [search]);
 
   const fetchProducts = useCallback(async (p: number, s: string, cf: string) => {
     setLoading(true);
@@ -82,8 +121,6 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => { fetchProducts(page, search, collectionFilter); }, [page, search, collectionFilter, fetchProducts]);
-
-  useEffect(() => { setPage(1); }, [search, collectionFilter]);
 
   return (
     <ProductContext.Provider value={{
