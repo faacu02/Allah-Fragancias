@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma migrate deploy && next build",
+    "build": "node scripts/migrate.js && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
