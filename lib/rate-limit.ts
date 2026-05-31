@@ -4,14 +4,15 @@ import { env } from './env';
 
 function createMemoryFallback(requests: number, windowSeconds: number) {
   const hits = new Map<string, number[]>();
-  setInterval(() => {
+  const timer = setInterval(() => {
     const cutoff = Date.now() - windowSeconds * 1000;
     for (const [key, timestamps] of hits) {
       const valid = timestamps.filter(t => t > cutoff);
       if (valid.length === 0) hits.delete(key);
       else hits.set(key, valid);
     }
-  }, 60_000).unref();
+  }, 60_000);
+  if (typeof timer.unref === 'function') timer.unref();
 
   return {
     limit: (key: string): { success: boolean; limit: number; remaining: number; reset: number } => {
