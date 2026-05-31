@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 import { Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import { useProducts } from '@/lib/product-context';
@@ -36,7 +36,7 @@ function getPageRange(current: number, total: number): (number | 'dots')[] {
   return pages;
 }
 
-export default function ProductGrid({ onProductClick, onAddToCart }: ProductGridProps) {
+const ProductGrid = memo(function ProductGrid({ onProductClick, onAddToCart }: ProductGridProps) {
   const { products, loading, total, page, limit, search, collectionFilter, collections, setPage, setSearch, setCollectionFilter } = useProducts();
   const [searchInput, setSearchInput] = useState(search);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -207,4 +207,6 @@ export default function ProductGrid({ onProductClick, onAddToCart }: ProductGrid
       )}
     </section>
   );
-}
+});
+
+export default ProductGrid;

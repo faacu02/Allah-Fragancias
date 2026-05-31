@@ -30,7 +30,7 @@ interface CartSidebarProps {
   checkoutSuccess: { orderId: string; paymentMethod: string; bankDetails?: { bankName: string; accountType: string; accountNumber: string; alias: string; cuit: string; holderName: string } } | null;
 }
 
-export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUpdateQuantity, onCheckout, isProcessing, checkoutSuccess }: CartSidebarProps) {
+const CartSidebar = React.memo(function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUpdateQuantity, onCheckout, isProcessing, checkoutSuccess }: CartSidebarProps) {
   const [copied, setCopied] = useState(false);
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [receiptUploaded, setReceiptUploaded] = useState(false);
@@ -357,4 +357,6 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
       )}
     </AnimatePresence>
   );
-}
+});
+
+export default CartSidebar;

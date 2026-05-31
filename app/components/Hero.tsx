@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 
@@ -15,7 +15,7 @@ interface HeroProps {
   onExploreClick?: () => void;
 }
 
-export default function Hero({ onExploreClick }: HeroProps) {
+function Hero({ onExploreClick }: HeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -134,3 +134,5 @@ export default function Hero({ onExploreClick }: HeroProps) {
     </section>
   );
 }
+
+export default memo(Hero);

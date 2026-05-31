@@ -88,6 +88,18 @@ export async function POST(request: NextRequest) {
 
     // Create order + decrement stock atomically
     const newOrder = await prisma.$transaction(async (tx) => {
+      // Re-validate stock inside transaction (race-condition-safe)
+      const freshProducts = await tx.product.findMany({
+        where: { id: { in: productIds } }
+      });
+      const freshMap = new Map(freshProducts.map(p => [p.id, p]));
+      for (const item of trustedItems) {
+        const fresh = freshMap.get(item.productId);
+        if (!fresh || fresh.stock < item.quantity) {
+          throw new Error(`Stock insuficiente para ${item.title}`);
+        }
+      }
+
       const order = await tx.order.create({
         data: {
           total,
