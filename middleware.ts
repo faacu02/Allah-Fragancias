@@ -4,15 +4,10 @@ import { verifyAuth } from './lib/auth';
 import { authRatelimit, apiRatelimit, forgotPasswordRatelimit } from './lib/rate-limit';
 import { generateCsrfToken, getCsrfCookieName, validateCsrfToken } from './lib/csrf';
 
-function getCsp(): string {
-  const isDev = process.env.NODE_ENV === 'development';
-  return isDev
-    ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com; font-src 'self' data:; connect-src 'self' https://api.unsplash.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-    : "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
-}
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com; font-src 'self' data:; connect-src 'self' https://api.unsplash.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
 
 function addSecurityHeaders(response: NextResponse) {
-  response.headers.set('Content-Security-Policy', getCsp());
+  response.headers.set('Content-Security-Policy', CSP);
   response.headers.set('X-DNS-Prefetch-Control', 'on');
   response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   response.headers.set('X-XSS-Protection', '1; mode=block');
