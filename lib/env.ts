@@ -21,7 +21,7 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_BASE_URL: z.string().url().default('https://allahfragancias.vercel.app'),
-    NEXT_PUBLIC_WHATSAPP_NUMBER: z.string(),
+    NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional(),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
