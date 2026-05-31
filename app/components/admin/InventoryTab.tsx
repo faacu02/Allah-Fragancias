@@ -213,7 +213,10 @@ export default function InventoryTab() {
         {loading ? (
           <div className="text-gold text-center py-12 text-xs uppercase tracking-widest">Cargando inventario...</div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-gold/50 text-center py-12 text-xs uppercase tracking-widest">No hay perfumes. Añade uno nuevo.</div>
+          <div className="flex flex-col items-center justify-center py-16 border border-gold/10">
+            <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">No hay perfumes. Añade uno nuevo.</p>
+            <button onClick={openNewModal} className="bg-gold text-dark text-xs uppercase tracking-widest font-bold py-4 px-8 hover:opacity-90 transition-opacity">Añadir Primer Perfume</button>
+          </div>
         ) : (
           <>
             <ProductMobileCards

@@ -356,7 +356,7 @@ export default function Home() {
          isProcessing={isProcessingCart}
          checkoutSuccess={checkoutSuccess}
          onRemoveItem={(id) => setCartItems(p => p.filter(i => i.productId !== id))}
-         onUpdateQuantity={(id, qty) => setCartItems(p => p.map(i => i.productId === id ? { ...i, quantity: qty } : i))}
+         onUpdateQuantity={(id, qty) => setCartItems(p => p.map(i => i.productId === id ? { ...i, quantity: Math.max(1, qty) } : i))}
          onCheckout={handleCheckout}
       />
 

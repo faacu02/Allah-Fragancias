@@ -63,7 +63,7 @@ export default function OrdersTab() {
   useEffect(() => {
     fetchOrders();
     let interval: ReturnType<typeof setInterval>;
-    const start = () => { interval = setInterval(fetchOrders, 30000); };
+    const start = () => { interval = setInterval(fetchOrders, 60000); };
     const stop = () => { clearInterval(interval); };
     start();
     const onVisibility = () => { if (document.hidden) stop(); else start(); };
@@ -115,7 +115,9 @@ export default function OrdersTab() {
        {loadingOrders ? (
           <div className="text-gold text-center py-12 text-xs uppercase tracking-widest">Cargando Órdenes...</div>
        ) : orders.length === 0 ? (
-          <div className="text-gold/50 text-center py-12 text-xs uppercase tracking-widest">Aún no tienes ventas registradas.</div>
+           <div className="flex flex-col items-center justify-center py-16 border border-gold/10">
+             <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">Aún no tienes ventas registradas.</p>
+           </div>
        ) : (
           <div className="flex flex-col gap-6">
              {orders.map((order) => (

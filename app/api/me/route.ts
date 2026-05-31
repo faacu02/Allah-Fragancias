@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ user: null }, { status: 401 });
     }
 
-    return NextResponse.json({ user });
+    const response = NextResponse.json({ user });
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
   } catch (error) {
     console.error('Error fetching user:', error);
     return NextResponse.json({ error: 'Error al obtener usuario' }, { status: 500 });

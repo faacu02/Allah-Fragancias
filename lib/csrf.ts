@@ -30,13 +30,4 @@ export function validateCsrfToken(token: string | null, cookie: string | null): 
   return diff === 0;
 }
 
-export function requireCsrf(request: Request): { valid: boolean; message?: string } {
-  const cookieStr = request.headers.get('cookie') || '';
-  const match = cookieStr.match(new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]*)`));
-  const csrfCookie = match ? decodeURIComponent(match[1]) : null;
-  const csrfHeader = request.headers.get(getCsrfHeaderName());
-  if (!validateCsrfToken(csrfHeader, csrfCookie)) {
-    return { valid: false, message: 'CSRF token inválido' };
-  }
-  return { valid: true };
-}
+
