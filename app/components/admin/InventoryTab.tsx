@@ -61,23 +61,30 @@ export default function InventoryTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value })
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const updErr = await res.json().catch(() => null);
+        throw new Error(updErr?.error || 'Error al actualizar producto');
+      }
       const updated = await res.json();
       setProducts(prev => prev.map(p => p.id === id ? updated : p));
       toast.success('Guardado');
-    } catch {
-      toast.error('Error al actualizar producto');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al actualizar producto');
     }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
-      await csrfFetch(`/api/products/${deleteTarget.id}`, { method: 'DELETE' });
+      const delRes = await csrfFetch(`/api/products/${deleteTarget.id}`, { method: 'DELETE' });
+      if (!delRes.ok) {
+        const delErr = await delRes.json().catch(() => null);
+        throw new Error(delErr?.error || 'Error al eliminar producto');
+      }
       setProducts(prev => prev.filter(p => p.id !== deleteTarget.id));
       toast.success('Perfume eliminado');
-    } catch {
-      toast.error('Error al eliminar producto');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al eliminar producto');
     } finally {
       setDeleteTarget(null);
     }
@@ -103,13 +110,16 @@ export default function InventoryTab() {
       const method = editingId ? 'PUT' : 'POST';
 
       const res = await csrfFetch(url, { method, body: formData });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || 'Error guardando el perfume');
+      }
 
       await fetchProducts();
       setIsModalOpen(false);
       toast.success(editingId ? 'Perfume actualizado' : 'Perfume creado');
-    } catch {
-      toast.error('Error guardando el perfume.');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error guardando el perfume.');
     } finally {
       setIsSaving(false);
     }

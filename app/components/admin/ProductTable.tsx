@@ -129,7 +129,7 @@ export default function ProductTable({ products, sortKey, sortDir, onSort, onEdi
             </td>
             <td className="py-2 px-2">
               <span className={`text-[10px] px-2 py-0.5 uppercase font-bold ${product.status === 'LOW' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
-                {product.status}
+                {product.status === 'LOW' ? 'Low Stock' : product.status === 'OK' ? 'OK' : product.status}
               </span>
             </td>
             <td className="py-2 px-2">

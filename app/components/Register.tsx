@@ -41,7 +41,10 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: formData.email })
         });
-        await res.json();
+        const forgotData = await res.json();
+        if (!res.ok) {
+          setError(forgotData.error || 'Error al enviar la solicitud'); return;
+        }
         setForgotSent(true);
       } catch {
         setError('Error al enviar la solicitud');
