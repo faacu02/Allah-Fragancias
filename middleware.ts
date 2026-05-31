@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyAuth } from './lib/auth';
-import { authRatelimit, apiRatelimit } from './lib/rate-limit';
+import { authRatelimit, apiRatelimit, forgotPasswordRatelimit } from './lib/rate-limit';
 import { generateCsrfToken, getCsrfCookieName, validateCsrfToken } from './lib/csrf';
 
 const securityHeaders = [
@@ -52,8 +52,12 @@ export async function middleware(request: NextRequest) {
     const ip = getClientIp(request);
     let ratelimit = apiRatelimit;
 
-    if (pathname.startsWith('/api/auth/login') || pathname.startsWith('/api/auth/register')) {
+    if (pathname.startsWith('/api/auth/login')) {
       ratelimit = authRatelimit;
+    } else if (pathname.startsWith('/api/auth/register')) {
+      ratelimit = authRatelimit;
+    } else if (pathname.startsWith('/api/auth/forgot-password') || pathname.startsWith('/api/auth/reset-password')) {
+      ratelimit = forgotPasswordRatelimit;
     }
 
     if (ratelimit) {

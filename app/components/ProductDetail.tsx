@@ -157,7 +157,7 @@ export default function ProductDetail({ product, onBack, onAddToCart }: ProductD
           <button onClick={() => setZoomImage(null)} className="absolute top-6 right-6 text-white hover:text-gold transition-colors p-2.5 z-10">
             <X size={28} />
           </button>
-          <Image src={zoomImage} alt={product.name} width={1200} height={1600} className="max-w-full max-h-full object-contain" />
+          <Image src={zoomImage} alt={product.name} width={1200} height={1600} className="max-w-full max-h-full object-contain" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
     </motion.div>

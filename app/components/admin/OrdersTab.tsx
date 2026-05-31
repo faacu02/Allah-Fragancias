@@ -62,8 +62,13 @@ export default function OrdersTab() {
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 30000);
-    return () => clearInterval(interval);
+    let interval: ReturnType<typeof setInterval>;
+    const start = () => { interval = setInterval(fetchOrders, 30000); };
+    const stop = () => { clearInterval(interval); };
+    start();
+    const onVisibility = () => { if (document.hidden) stop(); else start(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { stop(); document.removeEventListener('visibilitychange', onVisibility); };
   }, []);
 
   const handleApproveOrder = async (orderId: string) => {

@@ -32,6 +32,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const receiptUrl = await uploadImage(file);
+    if (!receiptUrl) {
+      return NextResponse.json({ error: 'Error al subir el comprobante. Configuración de almacenamiento faltante.' }, { status: 500 });
+    }
 
     const updated = await prisma.order.update({
       where: { id: orderId },

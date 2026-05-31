@@ -36,7 +36,7 @@ export default function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUp
   const [receiptUploaded, setReceiptUploaded] = useState(false);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const focusRef = useFocusTrap(isOpen && !confirmRemoveId);
+  const focusRef = useFocusTrap(isOpen);
   const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
   useEffect(() => {
