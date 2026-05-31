@@ -112,8 +112,16 @@ export default function OrdersTab() {
           <span className="text-[10px] uppercase tracking-widest text-gray-400">Total: {orders.length}</span>
        </div>
 
-       {loadingOrders ? (
-          <div className="text-gold text-center py-12 text-xs uppercase tracking-widest">Cargando Órdenes...</div>
+        {loadingOrders ? (
+           <div className="space-y-4">
+             {[1,2,3].map(n => (
+               <div key={n} className="bg-darker border border-gold/15 p-6 animate-pulse">
+                 <div className="h-4 bg-white/10 w-1/4 mb-3" />
+                 <div className="h-5 bg-white/10 w-1/3 mb-4" />
+                 <div className="h-3 bg-white/5 w-2/3" />
+               </div>
+             ))}
+           </div>
        ) : orders.length === 0 ? (
            <div className="flex flex-col items-center justify-center py-16 border border-gold/10">
              <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">Aún no tienes ventas registradas.</p>

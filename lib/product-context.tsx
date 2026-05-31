@@ -64,7 +64,7 @@ function writeUrlParams(page: number, search: string, collection: string) {
   if (collection) p.set('collection', collection);
   const qs = p.toString();
   const url = qs ? `/?${qs}` : '/';
-  window.history.replaceState(null, '', url);
+  window.history.pushState(null, '', url);
 }
 
 export function ProductProvider({ children }: { children: ReactNode }) {
@@ -77,6 +77,17 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const [page, setPageState] = useState(initial.page);
   const [search, setSearchState] = useState(initial.search);
   const [collectionFilter, setCollectionFilterState] = useState(initial.collection);
+
+  useEffect(() => {
+    const handlePop = () => {
+      const params = readUrlParams();
+      setPageState(params.page);
+      setSearchState(params.search);
+      setCollectionFilterState(params.collection);
+    };
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, []);
 
   const setPage = useCallback((p: number) => {
     setPageState(p);
