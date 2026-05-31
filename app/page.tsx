@@ -138,7 +138,7 @@ export default function Home() {
 
   // Reconcile cart with fresh product data (full list, not paginated)
   useEffect(() => {
-    fetch('/api/products?limit=50')
+    fetch('/api/products?limit=500')
       .then(r => r.json())
       .then(data => {
         const all = Array.isArray(data) ? data : data?.products;
