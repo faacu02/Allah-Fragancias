@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     const response = NextResponse.json({ products, total, page, limit, collections: collections.map(c => c.collection) });
-    response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=120');
+    response.headers.set('Cache-Control', 'public, max-age=30, s-maxage=60');
     return response;
   } catch (error) {
     return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 });
