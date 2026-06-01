@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Package, FileText, ArrowLeft, BarChart3, Settings } from 'lucide-react';
+import { Package, FileText, ArrowLeft } from 'lucide-react';
 
 import InventoryTab from './InventoryTab';
 import OrdersTab from './OrdersTab';
@@ -32,14 +32,6 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
               <FileText size={18} /> Órdenes
             </button>
 
-            <a className="flex items-center gap-4 text-gold/50 pl-4 hover:text-gold hover:tracking-[0.15em] transition-all duration-300 mt-8 py-3" href="#">
-              <BarChart3 size={20} />
-              <span className="text-xs tracking-widest uppercase">Analytics</span>
-            </a>
-            <a className="flex items-center gap-4 text-gold/50 pl-4 hover:text-gold hover:tracking-[0.15em] transition-all duration-300 py-3" href="#">
-              <Settings size={20} />
-              <span className="text-xs tracking-widest uppercase">Ajustes</span>
-            </a>
           </nav>
         </div>
       </aside>
