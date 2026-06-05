@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import NextImage from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trash2, ShoppingBag, Banknote, CheckCircle, Copy, Check, Upload, Image as ImageIcon, Loader } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Banknote, CheckCircle, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useFocusTrap } from '@/lib/useFocusTrap';
-import { csrfFetch } from '@/lib/csrf-client';
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
@@ -32,10 +31,7 @@ interface CartSidebarProps {
 
 const CartSidebar = React.memo(function CartSidebar({ isOpen, onClose, items, onRemoveItem, onUpdateQuantity, onCheckout, isProcessing, checkoutSuccess }: CartSidebarProps) {
   const [copied, setCopied] = useState(false);
-  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
-  const [receiptUploaded, setReceiptUploaded] = useState(false);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const focusRef = useFocusTrap(isOpen);
   const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
@@ -53,39 +49,6 @@ const CartSidebar = React.memo(function CartSidebar({ isOpen, onClose, items, on
       await navigator.clipboard.writeText(checkoutSuccess.bankDetails.alias);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const handleUploadReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !checkoutSuccess) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Solo se permiten imágenes');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('La imagen no puede superar los 5MB');
-      return;
-    }
-
-    setIsUploadingReceipt(true);
-    try {
-      const formData = new FormData();
-      formData.append('receipt', file);
-      const res = await csrfFetch(`/api/orders/${checkoutSuccess.orderId}/receipt`, {
-        method: 'POST',
-        body: formData
-      });
-      if (!res.ok) throw new Error('Error al subir');
-      setReceiptUploaded(true);
-      toast.success('Comprobante subido correctamente');
-    } catch {
-      toast.error('Error al subir el comprobante');
-    } finally {
-      setIsUploadingReceipt(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -188,40 +151,6 @@ const CartSidebar = React.memo(function CartSidebar({ isOpen, onClose, items, on
                   </div>
                 )}
                   
-                  {checkoutSuccess.paymentMethod === 'transferencia' && !receiptUploaded && (
-                    <div className="w-full mb-4">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleUploadReceipt}
-                        className="hidden"
-                      />
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploadingReceipt}
-                        className="w-full border border-dashed border-gold/30 text-gold flex items-center justify-center gap-3 py-5 text-xs font-bold uppercase tracking-widest hover:bg-gold/5 transition-colors disabled:opacity-50"
-                      >
-                        {isUploadingReceipt ? (
-                          <><Loader size={18} className="animate-spin" /> Subiendo...</>
-                        ) : (
-                          <><Upload size={18} /> Subir Comprobante de Transferencia</>
-                        )}
-                      </button>
-                      <p className="text-[10px] text-gray-600 text-center mt-2 uppercase tracking-widest">O también puedes enviarlo por WhatsApp</p>
-                    </div>
-                  )}
-
-                  {receiptUploaded && (
-                    <div className="w-full mb-4 p-4 bg-green-500/5 border border-green-500/20 flex items-center gap-3">
-                      <CheckCircle size={20} className="text-green-500 flex-none" />
-                      <div className="text-left">
-                        <p className="text-green-500 text-xs font-bold uppercase tracking-widest">Comprobante subido</p>
-                        <p className="text-gray-400 text-[10px]">El administrador lo revisará para confirmar el pago</p>
-                      </div>
-                    </div>
-                  )}
-
                   <a
                     href={`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`}
                     target="_blank"
