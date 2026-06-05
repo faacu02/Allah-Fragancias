@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Package, FileText, ArrowLeft } from 'lucide-react';
+import { Package, FileText, ArrowLeft, Images } from 'lucide-react';
 
 import InventoryTab from './InventoryTab';
 import OrdersTab from './OrdersTab';
+import CarouselTab from './CarouselTab';
 
 export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
-  const [activeTab, setActiveTab] = useState<'inventory' | 'orders'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'carousel'>('inventory');
 
 
 
@@ -31,6 +32,12 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
             >
               <FileText size={18} /> Órdenes
             </button>
+            <button
+               onClick={() => setActiveTab('carousel')}
+               className={`flex items-center gap-4 px-4 py-3 text-sm tracking-widest uppercase transition-all duration-300 ${activeTab === 'carousel' ? 'bg-gold/10 text-gold border-r-2 border-gold font-bold' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            >
+              <Images size={18} /> Carrusel
+            </button>
 
           </nav>
         </div>
@@ -43,16 +50,22 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
               <ArrowLeft size={24} />
             </button>
             <h2 className="font-serif text-gold uppercase tracking-tighter text-lg md:text-xl">
-              Panel de Control <span className="text-gold/50 text-[10px] tracking-widest">{activeTab === 'inventory' ? '· Inventario' : '· Órdenes'}</span>
+              Panel de Control <span className="text-gold/50 text-[10px] tracking-widest">{
+                activeTab === 'inventory' ? '· Inventario' :
+                activeTab === 'orders' ? '· Órdenes' :
+                '· Carrusel'
+              }</span>
             </h2>
           </div>
         </header>
 
-         {activeTab === 'inventory' ? (
-            <InventoryTab />
-         ) : (
-            <OrdersTab />
-         )}
+{activeTab === 'inventory' ? (
+             <InventoryTab />
+          ) : activeTab === 'orders' ? (
+             <OrdersTab />
+          ) : (
+             <CarouselTab />
+          )}
       </main>
 
       {/* Mobile bottom tab bar */}
@@ -70,6 +83,13 @@ export default function InventoryDashboard({ onBack }: { onBack: () => void }) {
         >
           <FileText size={18} />
           Órdenes
+        </button>
+        <button
+          onClick={() => setActiveTab('carousel')}
+          className={`flex-1 flex flex-col items-center gap-1 py-4 text-[10px] uppercase tracking-widest transition-colors ${activeTab === 'carousel' ? 'text-gold' : 'text-gray-600'}`}
+        >
+          <Images size={18} />
+          Carrusel
         </button>
       </nav>
     </div>
