@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const product = await prisma.product.findUnique({ where: { id } });
     if (!product) return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
     const response = NextResponse.json(product);
-    response.headers.set('Cache-Control', 'public, max-age=30, s-maxage=60');
+    response.headers.set('Cache-Control', 'no-store');
     return response;
   } catch (error) {
     return NextResponse.json({ error: 'Error al obtener producto' }, { status: 500 });
