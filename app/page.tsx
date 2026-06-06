@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ProductGrid from './components/ProductGrid';
+import WhatsAppButton from './components/WhatsAppButton';
 import Image from 'next/image';
 import { csrfFetch } from '@/lib/csrf-client';
 import { useFocusTrap } from '@/lib/useFocusTrap';
@@ -468,6 +469,9 @@ export default function Home() {
             onCancel={() => setConfirmLogout(false)}
           />
         )}
+
+        {/* WhatsApp Button: visible for clients on all pages, for admin only on landing */}
+        {(user?.role !== 'admin' || view === 'landing') && <WhatsAppButton />}
       </AnimatePresence>
     </div>
   );

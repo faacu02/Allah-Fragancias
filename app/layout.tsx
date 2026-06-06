@@ -4,7 +4,6 @@ import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import { env } from '@/lib/env';
 import { ProductProvider } from '@/lib/product-context';
-import WhatsAppButton from './components/WhatsAppButton';
 
 const notoSerif = Noto_Serif({
   subsets: ['latin'],
@@ -107,7 +106,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             } 
           }} 
         />
-        <WhatsAppButton />
       </body>
     </html>
   );
