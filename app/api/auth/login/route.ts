@@ -15,15 +15,23 @@ export async function POST(request: NextRequest) {
     }
 
     const sanitizedEmail = validator.normalizeEmail(validator.trim(email)) as string;
+    console.log('Login attempt:', { originalEmail: email, sanitizedEmail });
+    
     if (!validator.isEmail(sanitizedEmail)) {
       return NextResponse.json({ error: 'Email inválido' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
     
-    if (!user) return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
+    if (!user) {
+      console.log('User not found:', sanitizedEmail);
+      return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
+    }
 
+    console.log('User found:', { id: user.id, email: user.email, hasPassword: !!user.password });
     const validPassword = await bcrypt.compare(password, user.password);
+    console.log('Password comparison:', { validPassword, passwordLength: password.length, hashLength: user.password.length });
+    
     if (!validPassword) return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
 
     const token = signToken({ id: user.id, email: user.email, role: user.role });
