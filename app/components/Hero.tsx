@@ -100,25 +100,40 @@ function Hero({ onExploreClick }: HeroProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-dark via-transparent to-dark"></div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3 items-center">
-        {images.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentIndex(idx)}
-            className={`w-11 h-11 rounded-full transition-all duration-300 flex items-center justify-center ${idx === currentIndex ? 'bg-gold' : 'bg-white/40 hover:bg-white/70'}`}
-            aria-label={`Ir a imagen ${idx + 1}`}
-            aria-current={idx === currentIndex ? 'true' : undefined}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-4">
+        {/* Image title */}
+        {images[currentIndex]?.title && (
+          <motion.p 
+            key={currentIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-gold/80 text-sm uppercase tracking-[0.3em] font-light"
           >
-            <span className={`block w-3 h-3 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-dark' : ''}`} />
+            {images[currentIndex].title}
+          </motion.p>
+        )}
+        
+        <div className="flex gap-3 items-center">
+          {images.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`w-11 h-11 rounded-full transition-all duration-300 flex items-center justify-center ${idx === currentIndex ? 'bg-gold' : 'bg-white/40 hover:bg-white/70'}`}
+              aria-label={`Ir a imagen ${idx + 1}`}
+              aria-current={idx === currentIndex ? 'true' : undefined}
+            >
+              <span className={`block w-3 h-3 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-dark' : ''}`} />
+            </button>
+          ))}
+          <button
+            onClick={() => setIsPaused(p => !p)}
+            className="ml-4 px-3 py-3 border border-gold/30 text-gold text-[10px] uppercase tracking-widest hover:bg-gold/10 transition-colors"
+            aria-label={isPaused ? 'Reanudar carrusel' : 'Pausar carrusel'}
+          >
+            {isPaused ? '▶' : '❚❚'}
           </button>
-        ))}
-        <button
-          onClick={() => setIsPaused(p => !p)}
-          className="ml-4 px-3 py-3 border border-gold/30 text-gold text-[10px] uppercase tracking-widest hover:bg-gold/10 transition-colors"
-          aria-label={isPaused ? 'Reanudar carrusel' : 'Pausar carrusel'}
-        >
-          {isPaused ? '▶' : '❚❚'}
-        </button>
+        </div>
       </div>
 
       <div className="relative z-10 px-8 md:px-24 max-w-4xl">
