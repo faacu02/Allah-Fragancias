@@ -23,9 +23,7 @@ export async function GET(request: NextRequest) {
     const images = await prisma.carouselImage.findMany({
       orderBy: { order: 'asc' },
     });
-    const response = NextResponse.json(images);
-    response.headers.set('Cache-Control', 'no-store');
-    return response;
+    return NextResponse.json(images);
   } catch (error) {
     return NextResponse.json({ error: 'Error al obtener imágenes del carrusel' }, { status: 500 });
   }
@@ -41,32 +39,10 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const contentType = request.headers.get('content-type') || '';
-    let action: string;
-    let bodyData: Record<string, unknown> = {};
-
-    if (contentType.includes('application/json')) {
-      bodyData = await request.json();
-      action = bodyData.action as string;
-    } else {
-      const formData = await request.formData();
-      action = formData.get('action') as string;
-      // Convert FormData to object for consistent handling
-      formData.forEach((value, key) => {
-        if (key !== 'image') bodyData[key] = value;
-      });
-    }
+    const formData = await request.formData();
+    const action = formData.get('action') as string;
 
     if (action === 'upload') {
-      // Upload must use FormData for file
-      const formData = contentType.includes('application/json') 
-        ? null 
-        : await request.formData();
-      
-      if (!formData) {
-        return NextResponse.json({ error: 'Upload requiere FormData' }, { status: 400 });
-      }
-
       const file = formData.get('image') as File | null;
       const title = formData.get('title') as string || '';
 
@@ -106,17 +82,17 @@ export async function PUT(request: NextRequest) {
     }
 
     if (action === 'update') {
-      const id = bodyData.id as string;
-      const title = bodyData.title as string | null;
-      const isActive = bodyData.isActive as string | null;
-      const order = bodyData.order as string | null;
+      const id = formData.get('id') as string;
+      const title = formData.get('title') as string | null;
+      const isActive = formData.get('isActive');
+      const order = formData.get('order');
 
       if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
 
       const updateData: Record<string, unknown> = {};
-      if (title !== null && title !== undefined) updateData.title = title.trim();
-      if (isActive !== null && isActive !== undefined) updateData.isActive = isActive === 'true' || isActive === '1';
-      if (order !== null && order !== undefined) updateData.order = typeof order === 'number' ? order : parseInt(order as string, 10);
+      if (title !== null) updateData.title = title.trim();
+      if (isActive !== null) updateData.isActive = isActive === 'true';
+      if (order !== null) updateData.order = parseInt(order as string, 10);
 
       const image = await prisma.carouselImage.update({
         where: { id },
@@ -130,8 +106,15 @@ export async function PUT(request: NextRequest) {
     }
 
     if (action === 'reorder') {
-      const orders = bodyData.orders as { id: string; order: number }[];
-      if (!orders || !Array.isArray(orders)) return NextResponse.json({ error: 'Ordenes requeridas' }, { status: 400 });
+      const ordersJson = formData.get('orders') as string;
+      if (!ordersJson) return NextResponse.json({ error: 'Ordenes requeridas' }, { status: 400 });
+
+      let orders: { id: string; order: number }[];
+      try {
+        orders = JSON.parse(ordersJson);
+      } catch {
+        return NextResponse.json({ error: 'Formato de órdenes inválido' }, { status: 400 });
+      }
 
       await Promise.all(
         orders.map(({ id, order }) =>

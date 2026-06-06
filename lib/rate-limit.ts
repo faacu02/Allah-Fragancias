@@ -34,12 +34,6 @@ const redis = env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
   ? new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN })
   : null;
 
-if (redis) {
-  console.log('✅ Rate limit usando Upstash Redis');
-} else {
-  console.log('⚠️  Rate limit usando memoria local (fallback)');
-}
-
 export function createRatelimit(requests: number, window: number) {
   if (!redis) {
     if (process.env.NODE_ENV === 'production') {
@@ -55,7 +49,7 @@ export function createRatelimit(requests: number, window: number) {
   });
 }
 
-export const authRatelimit = createRatelimit(20, 60);
-export const apiRatelimit = createRatelimit(60, 60);
+export const authRatelimit = createRatelimit(5, 60);
+export const apiRatelimit = createRatelimit(30, 60);
 export const checkoutRatelimit = createRatelimit(10, 60);
-export const forgotPasswordRatelimit = createRatelimit(5, 300);
+export const forgotPasswordRatelimit = createRatelimit(3, 300);

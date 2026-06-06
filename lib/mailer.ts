@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { env } from './env';
+import { sendAdminWhatsApp } from './whatsapp-notify';
 
 const escapeHtml = (str: string) =>
   str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -236,9 +237,20 @@ export const sendAdminNotificationEmail = async (adminEmail: string, context: Or
       subject: `VENTA: ${statusTitle} - ${escapeHtml(context.userName)}`,
       html: htmlBody,
     });
-    return true;
   } catch (err) {
     console.error("Error notificando al admin:", err);
-    return false;
   }
+
+  const waMessage = [
+    `🛒 ${statusTitle}`,
+    `Cliente: ${context.userName}`,
+    `Total: $${context.total.toFixed(2)}`,
+    `Método: ${context.paymentMethod}`,
+    context.phone ? `Tel: ${context.phone}` : '',
+    `#${context.orderId.slice(-8)}`,
+  ].filter(Boolean).join('\n');
+
+  await sendAdminWhatsApp(waMessage);
+
+  return true;
 };

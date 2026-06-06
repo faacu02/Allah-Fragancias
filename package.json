@@ -4,8 +4,6 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "dev:watch": "nodemon --watch app/api --watch lib --ext ts --exec \"next dev\"",
-    "dev:turbo": "next dev --turbo",
     "build": "node scripts/migrate.js && next build",
     "start": "next start",
     "lint": "next lint",
@@ -56,7 +54,6 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^15.5.18",
     "happy-dom": "^20.9.0",
-    "nodemon": "^3.1.14",
     "prisma": "^6.19.3",
     "tailwindcss": "^4.1.14",
     "typescript": "~5.8.2",

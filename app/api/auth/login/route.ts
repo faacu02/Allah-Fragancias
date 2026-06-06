@@ -15,48 +15,16 @@ export async function POST(request: NextRequest) {
     }
 
     const sanitizedEmail = validator.normalizeEmail(validator.trim(email)) as string;
-    console.log('Login attempt:', { originalEmail: email, sanitizedEmail });
-    
     if (!validator.isEmail(sanitizedEmail)) {
       return NextResponse.json({ error: 'Email inválido' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
     
-    if (!user) {
-      console.log('User not found:', sanitizedEmail);
-      return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
-    }
+    if (!user) return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
 
-    console.log('User found:', { id: user.id, email: user.email, hasPassword: !!user.password, passwordLength: user.password?.length });
-    
-    // Check if password is stored as plain text (old users) or bcrypt hash
-    let validPassword = false;
-    const isBcryptHash = user.password && /^\$2[aby]\$/.test(user.password);
-    
-    if (isBcryptHash) {
-      // Modern bcrypt hash
-      validPassword = await bcrypt.compare(password, user.password);
-    } else if (user.password === password) {
-      // Legacy plain text password - update to bcrypt on successful login
-      validPassword = true;
-    }
-    
-    console.log('Password comparison:', { validPassword, isBcryptHash, hashPrefix: user.password?.substring(0, 7), inputLength: password.length, storedLength: user.password?.length });
-    
-    if (!validPassword) {
-      return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
-    }
-
-    // Update legacy plain text password to bcrypt hash
-    if (user.password && !user.password.startsWith('$2a$')) {
-      console.log('Updating legacy password to bcrypt hash for user:', user.id);
-      const newHashedPassword = await bcrypt.hash(password, 10);
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { password: newHashedPassword }
-      });
-    }
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
 
     const token = signToken({ id: user.id, email: user.email, role: user.role });
     const userResponse = { id: user.id, email: user.email, name: user.name, phone: user.phone, role: user.role };

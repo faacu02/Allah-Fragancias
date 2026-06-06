@@ -119,59 +119,57 @@ export default function CarouselTab() {
     }
   };
 
+  const handleTitleChange = async (id: string, newTitle: string) => {
+    try {
+      const formData = new FormData();
+      formData.append('action', 'update');
+      formData.append('id', id);
+      formData.append('title', newTitle);
+
+      const res = await csrfFetch('/api/admin/carousel', {
+        method: 'PUT',
+        body: formData,
+      });
+
+      if (res.ok) {
+        setImages(prev => prev.map(img => img.id === id ? { ...img, title: newTitle } : img));
+      }
+    } catch {
+      toast.error('Error al guardar título');
+    }
+  };
+
   const handleMoveUp = async (index: number) => {
     if (index === 0) return;
-    
-    // Get current orders
-    const currentOrder = images[index].order;
-    const prevOrder = images[index - 1].order;
-    
-    // Swap orders
-    const updates = [
-      { id: images[index].id, order: prevOrder },
-      { id: images[index - 1].id, order: currentOrder }
-    ];
-    
-    // Optimistically update UI
     const newImages = [...images];
-    newImages[index].order = prevOrder;
-    newImages[index - 1].order = currentOrder;
+    const temp = newImages[index].order;
+    newImages[index].order = newImages[index - 1].order;
+    newImages[index - 1].order = temp;
     newImages.sort((a, b) => a.order - b.order);
     setImages(newImages);
 
-    // Send to backend
+    const orders = newImages.map((img, i) => ({ id: img.id, order: i }));
     await csrfFetch('/api/admin/carousel', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reorder', orders: updates }),
+      body: JSON.stringify({ action: 'reorder', orders }),
     });
   };
 
   const handleMoveDown = async (index: number) => {
     if (index === images.length - 1) return;
-    
-    // Get current orders
-    const currentOrder = images[index].order;
-    const nextOrder = images[index + 1].order;
-    
-    // Swap orders
-    const updates = [
-      { id: images[index].id, order: nextOrder },
-      { id: images[index + 1].id, order: currentOrder }
-    ];
-    
-    // Optimistically update UI
     const newImages = [...images];
-    newImages[index].order = nextOrder;
-    newImages[index + 1].order = currentOrder;
+    const temp = newImages[index].order;
+    newImages[index].order = newImages[index + 1].order;
+    newImages[index + 1].order = temp;
     newImages.sort((a, b) => a.order - b.order);
     setImages(newImages);
 
-    // Send to backend
+    const orders = newImages.map((img, i) => ({ id: img.id, order: i }));
     await csrfFetch('/api/admin/carousel', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reorder', orders: updates }),
+      body: JSON.stringify({ action: 'reorder', orders }),
     });
   };
 
@@ -208,7 +206,18 @@ export default function CarouselTab() {
                   />
                 </div>
 
-                <div className="flex-1 flex flex-col gap-4 justify-center">
+                <div className="flex-1 flex flex-col gap-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={image.title}
+                      onChange={(e) => setImages(prev => prev.map(img => img.id === image.id ? { ...img, title: e.target.value } : img))}
+                      onBlur={(e) => handleTitleChange(image.id, e.target.value)}
+                      placeholder="Nombre del perfume (título)"
+                      className="w-full bg-dark border border-gold/20 text-white text-sm px-4 py-3 focus:border-gold focus:outline-none transition-colors placeholder:text-gray-600"
+                    />
+                  </div>
+
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       onClick={() => handleToggleActive(image.id, image.isActive)}
