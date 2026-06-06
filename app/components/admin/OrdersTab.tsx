@@ -148,7 +148,7 @@ export default function OrdersTab() {
 ) : filteredOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 border border-gold/10">
               {searchQuery ? (
-                <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">No se encontraron órdenes para "{searchQuery}"</p>
+                <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">No se encontraron órdenes para &quot;{searchQuery}&quot;</p>
               ) : (
                 <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">Aún no tienes ventas registradas.</p>
               )}
