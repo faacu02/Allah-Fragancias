@@ -28,11 +28,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
     }
 
-    console.log('User found:', { id: user.id, email: user.email, hasPassword: !!user.password });
-    const validPassword = await bcrypt.compare(password, user.password);
-    console.log('Password comparison:', { validPassword, passwordLength: password.length, hashLength: user.password.length });
+    console.log('User found:', { id: user.id, email: user.email, hasPassword: !!user.password, passwordLength: user.password?.length });
     
-    if (!validPassword) return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
+    // Check if password is stored as plain text (old users) or bcrypt hash
+    let validPassword = false;
+    if (user.password && user.password.startsWith('$2a$')) {
+      // Modern bcrypt hash
+      validPassword = await bcrypt.compare(password, user.password);
+    } else if (user.password === password) {
+      // Legacy plain text password - update to bcrypt on successful login
+      validPassword = true;
+    }
+    
+    console.log('Password comparison:', { validPassword, isBcryptHash: user.password?.startsWith('$2a$'), inputLength: password.length, storedLength: user.password?.length });
+    
+    if (!validPassword) {
+      return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
+    }
+
+    // Update legacy plain text password to bcrypt hash
+    if (user.password && !user.password.startsWith('$2a$')) {
+      console.log('Updating legacy password to bcrypt hash for user:', user.id);
+      const newHashedPassword = await bcrypt.hash(password, 10);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: newHashedPassword }
+      });
+    }
 
     const token = signToken({ id: user.id, email: user.email, role: user.role });
     const userResponse = { id: user.id, email: user.email, name: user.name, phone: user.phone, role: user.role };
