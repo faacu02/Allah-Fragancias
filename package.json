@@ -3,9 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "next dev --turbo",
-    "dev:watch": "nodemon --watch app/api --watch lib --ext ts --exec \"next dev --turbo\"",
-    "dev:old": "next dev",
+    "dev": "next dev",
+    "dev:watch": "nodemon --watch app/api --watch lib --ext ts --exec \"next dev\"",
+    "dev:turbo": "next dev --turbo",
     "build": "node scripts/migrate.js && next build",
     "start": "next start",
     "lint": "next lint",
