@@ -32,7 +32,9 @@ export async function POST(request: NextRequest) {
     
     // Check if password is stored as plain text (old users) or bcrypt hash
     let validPassword = false;
-    if (user.password && user.password.startsWith('$2a$')) {
+    const isBcryptHash = user.password && /^\$2[aby]\$/.test(user.password);
+    
+    if (isBcryptHash) {
       // Modern bcrypt hash
       validPassword = await bcrypt.compare(password, user.password);
     } else if (user.password === password) {
@@ -40,7 +42,7 @@ export async function POST(request: NextRequest) {
       validPassword = true;
     }
     
-    console.log('Password comparison:', { validPassword, isBcryptHash: user.password?.startsWith('$2a$'), inputLength: password.length, storedLength: user.password?.length });
+    console.log('Password comparison:', { validPassword, isBcryptHash, hashPrefix: user.password?.substring(0, 7), inputLength: password.length, storedLength: user.password?.length });
     
     if (!validPassword) {
       return NextResponse.json({ error: 'Credenciales inválidas.' }, { status: 401 });
