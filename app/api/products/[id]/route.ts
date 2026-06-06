@@ -55,7 +55,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           updateData.stock = parseInt(updateData.stock, 10);
           if (isNaN(updateData.stock)) return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
           if (updateData.stock < 0) return NextResponse.json({ error: 'El stock no puede ser negativo' }, { status: 400 });
-          updateData.status = updateData.stock < 10 ? 'LOW' : 'OK';
+          updateData.status = updateData.stock < 3 ? 'LOW' : 'OK';
         }
         if (updateData.price !== undefined) {
           updateData.price = parseFloat(updateData.price);

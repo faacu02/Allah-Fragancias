@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
         if (product) {
           await tx.product.update({
             where: { id: item.productId },
-            data: { status: product.stock < 10 ? 'LOW' : 'OK' }
+            data: { status: product.stock < 3 ? 'LOW' : 'OK' }
           });
         }
       }

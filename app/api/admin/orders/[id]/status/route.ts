@@ -77,7 +77,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           });
           await tx.product.update({
             where: { id: item.productId },
-            data: { status: restored.stock < 10 ? 'LOW' : 'OK' }
+            data: { status: restored.stock < 3 ? 'LOW' : 'OK' }
           });
         }
 

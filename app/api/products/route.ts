@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
         collection: collection.trim(),
         price,
         stock,
-        status: stock < 10 ? 'LOW' : 'OK',
+        status: stock < 3 ? 'LOW' : 'OK',
         description: description && typeof description === 'string' ? description.trim() || null : null,
         images
       }
