@@ -1,75 +1,57 @@
 'use client';
 
-import { Eye, Search } from 'lucide-react';
+import { Eye, Search, ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { csrfFetch } from '@/lib/csrf-client';
 import toast from 'react-hot-toast';
-import { useFocusTrap } from '@/lib/useFocusTrap';
+
+interface OrderItem {
+  id: string;
+  quantity: number;
+  price: number;
+  productId: string;
+  product?: { name: string; collection: string };
+}
+
+interface Order {
+  id: string;
+  total: number;
+  status: 'pending' | 'approved' | 'cancelled';
+  paymentMethod: 'efectivo' | 'transferencia';
+  createdAt: string;
+  userId: string;
+  user?: { name: string; email: string; phone?: string };
+  items: OrderItem[];
+  paymentReceipt?: string;
+}
+
+type StatusFilter = 'all' | 'pending' | 'approved' | 'cancelled';
 
 export default function OrdersTab() {
-  interface OrderItem {
-    id: string;
-    quantity: number;
-    price: number;
-    productId: string;
-    product?: { name: string; collection: string };
-  }
-
-  interface Order {
-    id: string;
-    total: number;
-    status: string;
-    paymentMethod: string;
-    createdAt: string;
-    userId: string;
-    user?: { name: string; email: string; phone?: string };
-    items: OrderItem[];
-    paymentReceipt?: string;
-  }
-
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [previewReceipt, setPreviewReceipt] = useState<string | null>(null);
-  const [confirmAction, setConfirmAction] = useState<{ orderId: string; action: 'approve' | 'cancel' } | null>(null);
-  const confirmFocusRef = useFocusTrap(!!confirmAction);
 
-  const filteredOrders = useMemo(() => {
-    if (!searchQuery.trim()) return orders;
-    const query = searchQuery.toLowerCase().trim();
-    return orders.filter(order =>
-      order.id.toLowerCase().includes(query) ||
-      order.user?.name?.toLowerCase().includes(query) ||
-      order.user?.email?.toLowerCase().includes(query)
-    );
-  }, [orders, searchQuery]);
-
-  const handleConfirmKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape' && confirmAction) setConfirmAction(null);
-  }, [confirmAction]);
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleConfirmKeyDown);
-    return () => document.removeEventListener('keydown', handleConfirmKeyDown);
-  }, [handleConfirmKeyDown]);
-
-   const fetchOrders = async () => {
-     setLoadingOrders(true);
-      try {
-        const res = await fetch('/api/admin/orders');
-        const data = await res.json();
-        if(res.ok) {
-          setOrders(data);
-        } else {
-          toast.error(data.error || 'Error cargando órdenes');
-        }
-      } catch (e) {
-        toast.error("Error cargando órdenes");
-      } finally {
-       setLoadingOrders(false);
-     }
-   };
+  const fetchOrders = async () => {
+    setLoadingOrders(true);
+    try {
+      const res = await fetch('/api/admin/orders');
+      const data = await res.json();
+      if (res.ok) {
+        setOrders(data);
+      } else {
+        toast.error(data.error || 'Error cargando órdenes');
+      }
+    } catch (e) {
+      toast.error("Error cargando órdenes");
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
 
   useEffect(() => {
     fetchOrders();
@@ -82,212 +64,289 @@ export default function OrdersTab() {
     return () => { stop(); document.removeEventListener('visibilitychange', onVisibility); };
   }, []);
 
+  const filteredOrders = React.useMemo(() => {
+    let result = orders;
+    
+    // Filter by status
+    if (statusFilter !== 'all') {
+      result = result.filter(o => o.status === statusFilter);
+    }
+    
+    // Filter by search
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(order =>
+        order.id.toLowerCase().includes(query) ||
+        order.user?.name?.toLowerCase().includes(query) ||
+        order.user?.email?.toLowerCase().includes(query)
+      );
+    }
+    
+    return result;
+  }, [orders, searchQuery, statusFilter]);
+
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case 'approved': return { label: 'Pagado', color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20', icon: CheckCircle };
+      case 'cancelled': return { label: 'Cancelado', color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20', icon: XCircle };
+      default: return { label: 'Pendiente', color: 'text-gold', bg: 'bg-gold/10', border: 'border-gold/20', icon: Clock };
+    }
+  };
+
   const handleApproveOrder = async (orderId: string) => {
-     try {
+    try {
       const res = await csrfFetch(`/api/admin/orders/${orderId}/status`, {
-         method: 'PUT',
-         headers: { 
-           'Content-Type': 'application/json'
-         },
-         body: JSON.stringify({ status: 'approved' })
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'approved' })
       });
-       if(!res.ok) throw new Error("Error approving");
-       toast.success("Orden Aprobada");
-       fetchOrders();
-     } catch(e) {
-       toast.error("Hubo un error al aprobar");
-     }
+      if (!res.ok) throw new Error("Error approving");
+      toast.success("Orden Aprobada");
+      fetchOrders();
+    } catch(e) {
+      toast.error("Hubo un error al aprobar");
+    }
   };
 
   const handleCancelOrder = async (orderId: string) => {
-     try {
+    try {
       const res = await csrfFetch(`/api/admin/orders/${orderId}/status`, {
-         method: 'PUT',
-         headers: { 
-           'Content-Type': 'application/json'
-         },
-         body: JSON.stringify({ status: 'cancelled' })
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' })
       });
-       if(!res.ok) throw new Error("Error cancelling");
-       toast.success("Orden Cancelada. Stock restaurado.");
-       fetchOrders();
-     } catch(e) {
-       toast.error("Hubo un error al cancelar");
-     }
+      if (!res.ok) throw new Error("Error cancelling");
+      toast.success("Orden Cancelada. Stock restaurado.");
+      fetchOrders();
+    } catch(e) {
+      toast.error("Hubo un error al cancelar");
+    }
+  };
+
+  const statusCounts = {
+    all: orders.length,
+    pending: orders.filter(o => o.status === 'pending').length,
+    approved: orders.filter(o => o.status === 'approved').length,
+    cancelled: orders.filter(o => o.status === 'cancelled').length,
   };
 
   return (
     <section className="px-6 md:px-12 py-12">
-       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 border-b border-gold/20 pb-4">
-          <div>
-            <h3 className="text-xl text-gold font-serif tracking-[0.2em] uppercase">Ventas Registradas</h3>
-            <span className="text-[10px] uppercase tracking-widest text-gray-400">Total: {filteredOrders.length} de {orders.length}</span>
-          </div>
-          <div className="relative w-full md:w-64">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por código, nombre o email..."
-              className="w-full bg-dark border border-gold/20 text-white text-sm pl-10 pr-4 py-3 focus:border-gold focus:outline-none transition-colors placeholder:text-gray-600"
-            />
-          </div>
-       </div>
+      {/* Header */}
+      <div className="mb-8 border-b border-gold/20 pb-4">
+        <h3 className="text-xl text-gold font-serif tracking-[0.2em] uppercase mb-4">Ventas Registradas</h3>
+        
+        {/* Status Filters */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {([
+            { key: 'all', label: 'Todas', count: statusCounts.all },
+            { key: 'pending', label: 'Pendientes', count: statusCounts.pending },
+            { key: 'approved', label: 'Pagadas', count: statusCounts.approved },
+            { key: 'cancelled', label: 'Canceladas', count: statusCounts.cancelled },
+          ] as { key: StatusFilter; label: string; count: number }[]).map(({ key, label, count }) => (
+            <button
+              key={key}
+              onClick={() => setStatusFilter(key)}
+              className={`px-4 py-2 text-xs uppercase tracking-widest border transition-colors ${
+                statusFilter === key
+                  ? 'bg-gold/20 text-gold border-gold/40'
+                  : 'text-gray-400 border-gold/10 hover:border-gold/30 hover:text-gray-300'
+              }`}
+            >
+              {label} ({count})
+            </button>
+          ))}
+        </div>
 
-        {loadingOrders ? (
-           <div className="space-y-4">
-             {[1,2,3].map(n => (
-               <div key={n} className="bg-darker border border-gold/15 p-6 animate-pulse">
-                 <div className="h-4 bg-white/10 w-1/4 mb-3" />
-                 <div className="h-5 bg-white/10 w-1/3 mb-4" />
-                 <div className="h-3 bg-white/5 w-2/3" />
-               </div>
-             ))}
-           </div>
-) : filteredOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 border border-gold/10">
-              {searchQuery ? (
-                <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">No se encontraron órdenes para &quot;{searchQuery}&quot;</p>
-              ) : (
-                <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">Aún no tienes ventas registradas.</p>
-              )}
+        {/* Search */}
+        <div className="relative max-w-md">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por código, nombre o email..."
+            className="w-full bg-dark border border-gold/20 text-white text-sm pl-10 pr-4 py-3 focus:border-gold focus:outline-none transition-colors placeholder:text-gray-600"
+          />
+        </div>
+      </div>
+
+      {loadingOrders ? (
+        <div className="space-y-2">
+          {[1,2,3].map(n => (
+            <div key={n} className="bg-darker border border-gold/15 p-4 animate-pulse flex items-center gap-4">
+              <div className="h-4 bg-white/10 w-20" />
+              <div className="h-4 bg-white/10 w-32" />
+              <div className="h-4 bg-white/10 w-16 ml-auto" />
             </div>
-        ) : (
-           <div className="flex flex-col gap-6">
-              {filteredOrders.map((order) => (
-                 <div key={order.id} className="bg-darker border border-gold/15 p-6 group transition-all duration-300 relative overflow-hidden">
-                    <div className={`absolute left-0 top-0 w-1 h-full ${order.status === 'approved' ? 'bg-green-500' : order.status === 'cancelled' ? 'bg-red-500' : 'bg-gold'}`}></div>
-                    <div className="flex flex-col md:flex-row justify-between gap-6">
-                       <div>
-                          <p className="text-gold font-serif text-2xl md:text-3xl tracking-wider mb-1">
-                             #{order.id.slice(-8)}
-                          </p>
-                          <p className="text-[10px] text-gray-400 uppercase tracking-widest">
-                             {new Date(order.createdAt).toLocaleDateString()} · {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                          <h4 className="text-lg text-white font-serif mt-3">{order.user?.name || "Cliente Sin Nombre"}</h4>
-                          <p className="text-xs text-gray-400">{order.user?.email}</p>
-                          {order.user?.phone && <p className="text-xs text-gold mt-1">📞 {order.user?.phone}</p>}
-                       </div>
-                      
-                      <div className="flex flex-col items-start md:items-end gap-2">
-                         <p className="font-serif text-2xl text-gold">${order.total}</p>
-                         <div className="flex gap-2">
-                            <span className="text-[10px] uppercase tracking-widest px-2 py-1 bg-white/5 border border-white/10 text-white">
-                               {order.paymentMethod}
-                            </span>
-                            <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-1 ${
-                              order.status === 'approved' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-                              order.status === 'cancelled' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                              'bg-gold/10 text-gold border border-gold/20'
-                            }`}>
-                               {order.status === 'approved' ? 'Pagado' : order.status === 'cancelled' ? 'Cancelado' : 'Pendiente'}
-                            </span>
-                         </div>
-                      </div>
-                   </div>
+          ))}
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 border border-gold/10">
+          <ShoppingBag size={32} className="text-gold/30 mb-4" />
+          <p className="text-gold/50 text-xs uppercase tracking-widest">
+            {searchQuery ? `No se encontraron órdenes para "${searchQuery}"` : 'No hay órdenes en esta categoría'}
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {/* Table Header */}
+          <div className="hidden md:grid grid-cols-[120px_1fr_100px_100px_140px_50px] gap-4 px-4 py-2 text-[10px] uppercase tracking-widest text-gray-500 border-b border-gold/10">
+            <span>Código</span>
+            <span>Cliente</span>
+            <span className="text-right">Total</span>
+            <span className="text-center">Estado</span>
+            <span className="text-right">Fecha</span>
+            <span></span>
+          </div>
 
-                    <div className="mt-6 border-t border-gold/10 pt-4">
-                      <h5 className="text-[10px] uppercase tracking-widest text-gold/70 mb-3">Artículos</h5>
-                      <ul className="space-y-2">
-                         {order.items.map((item: OrderItem) => (
-                            <li key={item.id} className="text-xs text-gray-300 flex justify-between border-b border-white/5 pb-2">
-                               <span>{item.quantity}x {item.product?.name || "Perfume"}</span>
-                               <span>${item.price}</span>
-                            </li>
-                         ))}
+          {filteredOrders.map((order) => {
+            const statusConfig = getStatusConfig(order.status);
+            const StatusIcon = statusConfig.icon;
+            const isExpanded = expandedOrderId === order.id;
+
+            return (
+              <div key={order.id} className="bg-darker border border-gold/15 overflow-hidden">
+                {/* Main Row */}
+                <div
+                  onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                  className="grid grid-cols-[100px_1fr_80px] md:grid-cols-[120px_1fr_100px_100px_140px_50px] gap-2 md:gap-4 px-4 py-3 items-center cursor-pointer hover:bg-white/5 transition-colors"
+                >
+                  <span className="text-gold font-serif text-lg tracking-wider">
+                    #{order.id.slice(-6)}
+                  </span>
+                  
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{order.user?.name || "Sin nombre"}</p>
+                    <p className="text-gray-500 text-[10px] truncate hidden md:block">{order.user?.email}</p>
+                  </div>
+                  
+                  <span className="text-gold font-serif text-lg text-right">
+                    ${order.total.toFixed(2)}
+                  </span>
+                  
+                  <div className="hidden md:flex justify-center">
+                    <span className={`flex items-center gap-1.5 text-[10px] uppercase tracking-widest px-2 py-1 ${statusConfig.bg} ${statusConfig.color} border ${statusConfig.border}`}>
+                      <StatusIcon size={12} />
+                      {statusConfig.label}
+                    </span>
+                  </div>
+                  
+                  <span className="hidden md:block text-right text-gray-400 text-xs">
+                    {new Date(order.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}
+                    <span className="text-gray-600 text-[10px] block">
+                      {new Date(order.createdAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </span>
+                  
+                  <div className="flex justify-end">
+                    {isExpanded ? <ChevronUp size={16} className="text-gold" /> : <ChevronDown size={16} className="text-gray-400" />}
+                  </div>
+                </div>
+
+                {/* Expanded Details */}
+                {isExpanded && (
+                  <div className="border-t border-gold/10 px-4 py-4 space-y-4">
+                    {/* Mobile Status (hidden on desktop) */}
+                    <div className="md:hidden flex items-center gap-2 mb-3">
+                      <span className={`flex items-center gap-1.5 text-[10px] uppercase tracking-widest px-2 py-1 ${statusConfig.bg} ${statusConfig.color} border ${statusConfig.border}`}>
+                        <StatusIcon size={12} />
+                        {statusConfig.label}
+                      </span>
+                      <span className="text-gray-400 text-xs">
+                        {new Date(order.createdAt).toLocaleString('es-AR')}
+                      </span>
+                    </div>
+
+                    {/* Contact Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Email</p>
+                        <p className="text-gray-300">{order.user?.email || '-'}</p>
+                      </div>
+                      {order.user?.phone && (
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Teléfono</p>
+                          <p className="text-gold">{order.user.phone}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Payment Method */}
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="text-[10px] uppercase tracking-widest text-gray-500">Método de pago:</span>
+                      <span className="text-white px-2 py-1 bg-white/5 border border-white/10 text-xs uppercase">{order.paymentMethod}</span>
+                    </div>
+
+                    {/* Items */}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-gold/70 mb-2">Artículos ({order.items.length})</p>
+                      <ul className="space-y-1">
+                        {order.items.map((item) => (
+                          <li key={item.id} className="text-sm text-gray-300 flex justify-between border-b border-white/5 pb-1">
+                            <span>{item.quantity}x {item.product?.name || "Producto"}</span>
+                            <span className="text-gold">${item.price.toFixed(2)}</span>
+                          </li>
+                        ))}
                       </ul>
                     </div>
 
+                    {/* Payment Receipt */}
                     {order.paymentReceipt && (
-                      <div className="mt-4 border-t border-gold/10 pt-4">
-                        <h5 className="text-[10px] uppercase tracking-widest text-gold/70 mb-3">Comprobante de Transferencia</h5>
+                      <div className="pt-2">
                         <button
-                          onClick={() => setPreviewReceipt(order.paymentReceipt ?? null)}
-                          className="flex items-center gap-2 text-gold text-xs hover:text-gold-light transition-colors px-3 py-3"
+                          onClick={(e) => { e.stopPropagation(); setPreviewReceipt(order.paymentReceipt ?? null); }}
+                          className="flex items-center gap-2 text-gold text-xs hover:text-gold-light transition-colors"
                         >
-                          <Eye size={16} />
-                          Ver comprobante
+                          <Eye size={14} />
+                          Ver comprobante de transferencia
                         </button>
                       </div>
                     )}
 
+                    {/* Actions */}
                     {order.status === 'pending' && (
-                       <div className="mt-6 pt-4 border-t border-gold/20 flex justify-end gap-3">
-                          <button
-                            onClick={() => setConfirmAction({ orderId: order.id, action: 'cancel' })}
-                            className="border border-red-500/30 text-red-500 px-4 py-4 text-xs font-bold uppercase tracking-widest hover:bg-red-500/10 transition-colors"
-                          >
-                            Cancelar
-                          </button>
-                          <button 
-                              onClick={() => setConfirmAction({ orderId: order.id, action: 'approve' })}
-                              className="bg-gold text-dark px-6 py-4 text-xs font-bold uppercase tracking-widest hover:bg-gold-light transition-colors"
-                         >
-                            Marcar Pago Recibido
-                         </button>
-                       </div>
+                      <div className="flex justify-end gap-3 pt-3 border-t border-gold/20">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleCancelOrder(order.id); }}
+                          className="border border-red-500/30 text-red-500 px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-red-500/10 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleApproveOrder(order.id); }}
+                          className="bg-gold text-dark px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gold-light transition-colors"
+                        >
+                          Marcar Pago Recibido
+                        </button>
+                      </div>
                     )}
-                 </div>
-             ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-             {/* Confirm Action Modal */}
-              {confirmAction && (
-                <div ref={confirmFocusRef} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Confirmar acción">
-                 <div className="bg-darker border border-gold/20 w-full max-w-sm p-8 relative">
-                   <h3 className="font-serif text-xl text-gold mb-4">{confirmAction.action === 'approve' ? 'Aprobar Pago' : 'Cancelar Orden'}</h3>
-                   <p className="text-gray-400 text-sm mb-6">
-                     {confirmAction.action === 'approve'
-                       ? '¿Confirmás que el pago fue recibido?'
-                       : '¿Cancelar esta orden? Se restaurará el stock.'}
-                   </p>
-                   <div className="flex gap-4">
-                      <button onClick={() => setConfirmAction(null)} className="flex-1 border border-gold/20 text-gold text-xs uppercase tracking-widest font-bold py-4 hover:bg-gold/10 transition-colors">
-                        Volver
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirmAction.action === 'approve') {
-                            handleApproveOrder(confirmAction.orderId);
-                          } else {
-                            handleCancelOrder(confirmAction.orderId);
-                          }
-                          setConfirmAction(null);
-                        }}
-                        className={`flex-1 text-xs uppercase tracking-widest font-bold py-4 transition-colors ${
-                         confirmAction.action === 'approve'
-                           ? 'bg-green-500/10 border border-green-500 text-green-500 hover:bg-green-500/20'
-                           : 'bg-red-500/10 border border-red-500 text-red-500 hover:bg-red-500/20'
-                       }`}
-                     >
-                       {confirmAction.action === 'approve' ? 'Aprobar' : 'Cancelar Orden'}
-                     </button>
-                   </div>
-                 </div>
-               </div>
-             )}
-
-             {/* Receipt preview modal */}
-             {previewReceipt && (
-               <div
-                 className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-4 cursor-pointer"
-                 role="dialog"
-                 aria-modal="true"
-                 aria-label="Vista previa del comprobante"
-                 onClick={() => setPreviewReceipt(null)}
-               >
-                <Image
-                  src={previewReceipt}
-                  alt="Comprobante"
-                  width={800}
-                  height={600}
-                  className="max-w-full max-h-full object-contain"
-                />
-               </div>
-             )}
-          </div>
-       )}
+      {/* Receipt preview modal */}
+      {previewReceipt && (
+        <div
+          className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-4 cursor-pointer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Vista previa del comprobante"
+          onClick={() => setPreviewReceipt(null)}
+        >
+          <Image
+            src={previewReceipt}
+            alt="Comprobante"
+            width={800}
+            height={600}
+            className="max-w-full max-h-full object-contain"
+          />
+        </div>
+      )}
     </section>
   );
 }
