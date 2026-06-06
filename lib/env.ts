@@ -18,7 +18,6 @@ export const env = createEnv({
     ALIAS: z.string().optional(),
     CUIT: z.string().optional(),
     HOLDER_NAME: z.string().optional(),
-    CALLMEBOT_APIKEY: z.string().optional(),
   },
   client: {
     NEXT_PUBLIC_BASE_URL: z.string().url().default('https://allahfragancias.vercel.app'),
@@ -40,7 +39,6 @@ export const env = createEnv({
     ALIAS: process.env.ALIAS,
     CUIT: process.env.CUIT,
     HOLDER_NAME: process.env.HOLDER_NAME,
-    CALLMEBOT_APIKEY: process.env.CALLMEBOT_APIKEY,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
     NEXT_PUBLIC_WHATSAPP_NUMBER: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
   },
