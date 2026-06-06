@@ -1,8 +1,8 @@
 'use client';
 
-import { Eye, XCircle } from 'lucide-react';
+import { Eye, Search } from 'lucide-react';
 import Image from 'next/image';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { csrfFetch } from '@/lib/csrf-client';
 import toast from 'react-hot-toast';
 import { useFocusTrap } from '@/lib/useFocusTrap';
@@ -30,9 +30,20 @@ export default function OrdersTab() {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [previewReceipt, setPreviewReceipt] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ orderId: string; action: 'approve' | 'cancel' } | null>(null);
   const confirmFocusRef = useFocusTrap(!!confirmAction);
+
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery.trim()) return orders;
+    const query = searchQuery.toLowerCase().trim();
+    return orders.filter(order =>
+      order.id.toLowerCase().includes(query) ||
+      order.user?.name?.toLowerCase().includes(query) ||
+      order.user?.email?.toLowerCase().includes(query)
+    );
+  }, [orders, searchQuery]);
 
   const handleConfirmKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape' && confirmAction) setConfirmAction(null);
@@ -107,9 +118,21 @@ export default function OrdersTab() {
 
   return (
     <section className="px-6 md:px-12 py-12">
-       <div className="flex justify-between items-end mb-8 border-b border-gold/20 pb-4">
-          <h3 className="text-xl text-gold font-serif tracking-[0.2em] uppercase">Ventas Registradas</h3>
-          <span className="text-[10px] uppercase tracking-widest text-gray-400">Total: {orders.length}</span>
+       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 border-b border-gold/20 pb-4">
+          <div>
+            <h3 className="text-xl text-gold font-serif tracking-[0.2em] uppercase">Ventas Registradas</h3>
+            <span className="text-[10px] uppercase tracking-widest text-gray-400">Total: {filteredOrders.length} de {orders.length}</span>
+          </div>
+          <div className="relative w-full md:w-64">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar por código, nombre o email..."
+              className="w-full bg-dark border border-gold/20 text-white text-sm pl-10 pr-4 py-3 focus:border-gold focus:outline-none transition-colors placeholder:text-gray-600"
+            />
+          </div>
        </div>
 
         {loadingOrders ? (
@@ -122,24 +145,31 @@ export default function OrdersTab() {
                </div>
              ))}
            </div>
-       ) : orders.length === 0 ? (
-           <div className="flex flex-col items-center justify-center py-16 border border-gold/10">
-             <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">Aún no tienes ventas registradas.</p>
-           </div>
-       ) : (
-          <div className="flex flex-col gap-6">
-             {orders.map((order) => (
-                <div key={order.id} className="bg-darker border border-gold/15 p-6 group transition-all duration-300 relative overflow-hidden">
-                   <div className={`absolute left-0 top-0 w-1 h-full ${order.status === 'approved' ? 'bg-green-500' : order.status === 'cancelled' ? 'bg-red-500' : 'bg-gold'}`}></div>
-                   <div className="flex flex-col md:flex-row justify-between gap-6">
-                      <div>
-                         <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">
-                            Orden #{order.id.slice(-8)} • {new Date(order.createdAt).toLocaleDateString()}
-                         </p>
-                         <h4 className="text-lg text-white font-serif">{order.user?.name || "Cliente Sin Nombre"}</h4>
-                         <p className="text-xs text-gray-400">{order.user?.email}</p>
-                         {order.user?.phone && <p className="text-xs text-gold mt-1">📞 {order.user?.phone}</p>}
-                      </div>
+) : filteredOrders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 border border-gold/10">
+              {searchQuery ? (
+                <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">No se encontraron órdenes para "{searchQuery}"</p>
+              ) : (
+                <p className="text-gold/50 text-xs uppercase tracking-widest mb-6">Aún no tienes ventas registradas.</p>
+              )}
+            </div>
+        ) : (
+           <div className="flex flex-col gap-6">
+              {filteredOrders.map((order) => (
+                 <div key={order.id} className="bg-darker border border-gold/15 p-6 group transition-all duration-300 relative overflow-hidden">
+                    <div className={`absolute left-0 top-0 w-1 h-full ${order.status === 'approved' ? 'bg-green-500' : order.status === 'cancelled' ? 'bg-red-500' : 'bg-gold'}`}></div>
+                    <div className="flex flex-col md:flex-row justify-between gap-6">
+                       <div>
+                          <p className="text-gold font-serif text-2xl md:text-3xl tracking-wider mb-1">
+                             #{order.id.slice(-8)}
+                          </p>
+                          <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+                             {new Date(order.createdAt).toLocaleDateString()} · {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                          <h4 className="text-lg text-white font-serif mt-3">{order.user?.name || "Cliente Sin Nombre"}</h4>
+                          <p className="text-xs text-gray-400">{order.user?.email}</p>
+                          {order.user?.phone && <p className="text-xs text-gold mt-1">📞 {order.user?.phone}</p>}
+                       </div>
                       
                       <div className="flex flex-col items-start md:items-end gap-2">
                          <p className="font-serif text-2xl text-gold">${order.total}</p>
