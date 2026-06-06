@@ -23,7 +23,9 @@ export async function GET(request: NextRequest) {
     const images = await prisma.carouselImage.findMany({
       orderBy: { order: 'asc' },
     });
-    return NextResponse.json(images);
+    const response = NextResponse.json(images);
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
   } catch (error) {
     return NextResponse.json({ error: 'Error al obtener imágenes del carrusel' }, { status: 500 });
   }

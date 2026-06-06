@@ -141,35 +141,57 @@ export default function CarouselTab() {
 
   const handleMoveUp = async (index: number) => {
     if (index === 0) return;
+    
+    // Get current orders
+    const currentOrder = images[index].order;
+    const prevOrder = images[index - 1].order;
+    
+    // Swap orders
+    const updates = [
+      { id: images[index].id, order: prevOrder },
+      { id: images[index - 1].id, order: currentOrder }
+    ];
+    
+    // Optimistically update UI
     const newImages = [...images];
-    const temp = newImages[index].order;
-    newImages[index].order = newImages[index - 1].order;
-    newImages[index - 1].order = temp;
+    newImages[index].order = prevOrder;
+    newImages[index - 1].order = currentOrder;
     newImages.sort((a, b) => a.order - b.order);
     setImages(newImages);
 
-    const orders = newImages.map((img, i) => ({ id: img.id, order: i }));
+    // Send to backend
     await csrfFetch('/api/admin/carousel', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reorder', orders }),
+      body: JSON.stringify({ action: 'reorder', orders: updates }),
     });
   };
 
   const handleMoveDown = async (index: number) => {
     if (index === images.length - 1) return;
+    
+    // Get current orders
+    const currentOrder = images[index].order;
+    const nextOrder = images[index + 1].order;
+    
+    // Swap orders
+    const updates = [
+      { id: images[index].id, order: nextOrder },
+      { id: images[index + 1].id, order: currentOrder }
+    ];
+    
+    // Optimistically update UI
     const newImages = [...images];
-    const temp = newImages[index].order;
-    newImages[index].order = newImages[index + 1].order;
-    newImages[index + 1].order = temp;
+    newImages[index].order = nextOrder;
+    newImages[index + 1].order = currentOrder;
     newImages.sort((a, b) => a.order - b.order);
     setImages(newImages);
 
-    const orders = newImages.map((img, i) => ({ id: img.id, order: i }));
+    // Send to backend
     await csrfFetch('/api/admin/carousel', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reorder', orders }),
+      body: JSON.stringify({ action: 'reorder', orders: updates }),
     });
   };
 

@@ -30,18 +30,19 @@ function Hero({ onExploreClick }: HeroProps) {
   useEffect(() => {
     async function fetchCarousel() {
       try {
-        const res = await fetch('/api/carousel');
+        const res = await fetch('/api/carousel', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
-          if (data.length > 0) {
-            setCarouselImages(data);
-          }
+          setCarouselImages(data.length > 0 ? data : []);
         }
       } catch {
         // Use fallback images on error
       }
     }
     fetchCarousel();
+    // Refresh every 10 seconds to catch admin changes
+    const interval = setInterval(fetchCarousel, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const images = carouselImages.length > 0 ? carouselImages : FALLBACK_IMAGES.map((url, i) => ({ id: String(i), imageUrl: url, title: '', order: i }));
