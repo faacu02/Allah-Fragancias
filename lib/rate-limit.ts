@@ -34,6 +34,12 @@ const redis = env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
   ? new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN })
   : null;
 
+if (redis) {
+  console.log('✅ Rate limit usando Upstash Redis');
+} else {
+  console.log('⚠️  Rate limit usando memoria local (fallback)');
+}
+
 export function createRatelimit(requests: number, window: number) {
   if (!redis) {
     if (process.env.NODE_ENV === 'production') {
