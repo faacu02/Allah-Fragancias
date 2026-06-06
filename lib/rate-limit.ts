@@ -49,7 +49,13 @@ export function createRatelimit(requests: number, window: number) {
   });
 }
 
-export const authRatelimit = createRatelimit(5, 60);
+export const authRatelimit = createRatelimit(
+  process.env.NODE_ENV === 'production' ? 5 : 100,
+  60
+);
 export const apiRatelimit = createRatelimit(30, 60);
 export const checkoutRatelimit = createRatelimit(10, 60);
-export const forgotPasswordRatelimit = createRatelimit(3, 300);
+export const forgotPasswordRatelimit = createRatelimit(
+  process.env.NODE_ENV === 'production' ? 3 : 50,
+  300
+);
