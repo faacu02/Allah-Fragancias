@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
@@ -74,6 +75,9 @@ export async function PUT(request: NextRequest) {
         },
       });
 
+      revalidatePath('/');
+      revalidatePath('/api/carousel');
+
       return NextResponse.json(image);
     }
 
@@ -95,6 +99,9 @@ export async function PUT(request: NextRequest) {
         data: updateData,
       });
 
+      revalidatePath('/');
+      revalidatePath('/api/carousel');
+
       return NextResponse.json(image);
     }
 
@@ -114,6 +121,9 @@ export async function PUT(request: NextRequest) {
           prisma.carouselImage.update({ where: { id }, data: { order } })
         )
       );
+
+      revalidatePath('/');
+      revalidatePath('/api/carousel');
 
       return NextResponse.json({ success: true });
     }

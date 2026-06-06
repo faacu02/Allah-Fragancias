@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/auth';
 
@@ -18,6 +19,9 @@ export async function DELETE(
     }
 
     await prisma.carouselImage.delete({ where: { id } });
+
+    revalidatePath('/');
+    revalidatePath('/api/carousel');
 
     return NextResponse.json({ success: true });
   } catch (error) {

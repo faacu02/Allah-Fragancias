@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
@@ -131,6 +132,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       where: { id },
       data: updateData
     });
+
+    revalidatePath('/');
+    revalidatePath('/api/products');
+
     return NextResponse.json(updatedProduct);
   } catch (error) {
     console.error("Error en PUT:", error);
@@ -145,6 +150,10 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   try {
     const { id } = await params;
     await prisma.product.delete({ where: { id } });
+
+    revalidatePath('/');
+    revalidatePath('/api/products');
+
     return NextResponse.json({ message: 'Producto eliminado con éxito' });
   } catch (error) {
     return NextResponse.json({ error: 'Error al eliminar producto' }, { status: 500 });

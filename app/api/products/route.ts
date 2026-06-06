@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
@@ -135,6 +136,9 @@ export async function POST(request: NextRequest) {
         images
       }
     });
+
+    revalidatePath('/');
+    revalidatePath('/api/products');
 
     return NextResponse.json(newProduct);
   } catch (error) {
