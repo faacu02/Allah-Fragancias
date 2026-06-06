@@ -59,7 +59,8 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) { setError('El email no es válido'); return; }
       if (!formData.password || formData.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return; }
-      if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) { setError('El teléfono contiene caracteres inválidos'); return; }
+      if (!formData.phone.trim()) { setError('El teléfono es requerido'); return; }
+      if (!/^[\d\s\-\+\(\)]+$/.test(formData.phone)) { setError('El teléfono contiene caracteres inválidos'); return; }
     } else {
       if (!formData.email.trim()) { setError('El email es requerido'); return; }
       if (!formData.password) { setError('La contraseña es requerida'); return; }
@@ -187,9 +188,9 @@ export default function Register({ onClose, onSuccess }: RegisterProps) {
                         <input type="tel" id="phone" value={formData.phone}
                           onChange={(e) => setFormData({...formData, phone: e.target.value})}
                           className="block w-full py-3 bg-transparent border-0 border-b border-gold/20 text-white outline-none focus:outline-none focus:ring-0 focus:border-gold transition-all duration-300 peer placeholder-transparent"
-                          placeholder="Teléfono Celular" autoComplete="tel" />
+                          placeholder="Teléfono Celular" required autoComplete="tel" />
                         <label htmlFor="phone" className="absolute left-0 top-3 text-gray-400 text-sm uppercase tracking-widest pointer-events-none transition-all duration-300 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-gold peer-[:not(:placeholder-shown)]:-translate-y-6 peer-[:not(:placeholder-shown)]:scale-75">
-                          Teléfono Celular <span className="text-gray-700 font-normal normal-case">(opcional)</span>
+                          Teléfono Celular <span className="text-red-500">*</span>
                         </label>
                       </div>
                     </>
