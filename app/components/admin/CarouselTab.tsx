@@ -119,26 +119,6 @@ export default function CarouselTab() {
     }
   };
 
-  const handleTitleChange = async (id: string, newTitle: string) => {
-    try {
-      const formData = new FormData();
-      formData.append('action', 'update');
-      formData.append('id', id);
-      formData.append('title', newTitle);
-
-      const res = await csrfFetch('/api/admin/carousel', {
-        method: 'PUT',
-        body: formData,
-      });
-
-      if (res.ok) {
-        setImages(prev => prev.map(img => img.id === id ? { ...img, title: newTitle } : img));
-      }
-    } catch {
-      toast.error('Error al guardar título');
-    }
-  };
-
   const handleMoveUp = async (index: number) => {
     if (index === 0) return;
     
@@ -228,18 +208,7 @@ export default function CarouselTab() {
                   />
                 </div>
 
-                <div className="flex-1 flex flex-col gap-4">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={image.title}
-                      onChange={(e) => setImages(prev => prev.map(img => img.id === image.id ? { ...img, title: e.target.value } : img))}
-                      onBlur={(e) => handleTitleChange(image.id, e.target.value)}
-                      placeholder="Nombre del perfume (título)"
-                      className="w-full bg-dark border border-gold/20 text-white text-sm px-4 py-3 focus:border-gold focus:outline-none transition-colors placeholder:text-gray-600"
-                    />
-                  </div>
-
+                <div className="flex-1 flex flex-col gap-4 justify-center">
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       onClick={() => handleToggleActive(image.id, image.isActive)}
