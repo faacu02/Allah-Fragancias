@@ -469,10 +469,10 @@ export default function Home() {
             onCancel={() => setConfirmLogout(false)}
           />
         )}
-
-        {/* WhatsApp Button: visible for clients on all pages, for admin only on landing */}
-        {(user?.role !== 'admin' || view === 'landing') && <WhatsAppButton />}
       </AnimatePresence>
+
+      {/* WhatsApp Button: visible for clients on all pages, for admin only on landing */}
+      {(user?.role !== 'admin' || view === 'landing') && <WhatsAppButton />}
     </div>
   );
 }
