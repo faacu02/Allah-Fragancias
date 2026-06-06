@@ -33,10 +33,11 @@ function Hero({ onExploreClick }: HeroProps) {
         const res = await fetch('/api/carousel', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
+          console.log('[Hero] Carousel data:', data);
           setCarouselImages(data.length > 0 ? data : []);
         }
-      } catch {
-        // Use fallback images on error
+      } catch (err) {
+        console.log('[Hero] Error fetching carousel:', err);
       }
     }
     fetchCarousel();
@@ -102,17 +103,15 @@ function Hero({ onExploreClick }: HeroProps) {
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-4">
         {/* Image title */}
-        {images[currentIndex]?.title && (
-          <motion.p 
-            key={currentIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-gold/80 text-sm uppercase tracking-[0.3em] font-light"
-          >
-            {images[currentIndex].title}
-          </motion.p>
-        )}
+        <motion.p 
+          key={`title-${currentIndex}`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-gold text-lg md:text-xl uppercase tracking-[0.3em] font-serif font-bold drop-shadow-lg"
+        >
+          {images[currentIndex]?.title || `Slide ${currentIndex + 1}`}
+        </motion.p>
         
         <div className="flex gap-3 items-center">
           {images.map((_, idx) => (
