@@ -283,30 +283,6 @@ export default function HomeClient({ initialCarouselImages }: { initialCarouselI
               <ProductGrid onProductClick={(product: ProductData) => { setSelectedProduct(product); setView('detail'); }} onAddToCart={handleAddToCart} />
 
 
-
-              <section className="py-16 md:py-32 px-8 md:px-24 bg-dark">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
-                  <div className="relative">
-                    <div className="absolute -top-10 -left-10 w-40 h-40 border border-gold/10 -z-10"></div>
-                    <Image 
-                      alt="Heritage" 
-                      className="w-full h-64 md:h-[600px] object-cover grayscale contrast-125"
-                      loading="lazy"
-                      src="https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&q=80&w=800" 
-                      width={800}
-                      height={600}
-                    />
-                  </div>
-                  <div className="space-y-8">
-                    <span className="text-gold text-xs font-bold uppercase tracking-[0.4em]">Nuestra Herencia</span>
-                    <h2 className="font-serif text-4xl md:text-5xl text-white tracking-tighter leading-tight">El Legado de la Alquimia Árabe</h2>
-                    <div className="h-px w-24 bg-gold"></div>
-                    <p className="text-gray-400 leading-loose font-light text-lg">
-                      Fundada en el corazón de los oasis antiguos, Allah Fragancias fusiona la sabiduría milenaria de los maestros perfumistas con la sofisticación contemporánea. Cada creación es un tributo a la ruta de las especias, utilizando solo ingredientes de origen ético y pureza inigualable.
-                    </p>
-                  </div>
-                </div>
-              </section>
             </main>
 
             <footer className="w-full py-12 md:py-20 px-8 flex flex-col items-center gap-6 bg-darker border-t border-gold/10">

@@ -59,16 +59,6 @@ const ProductGrid = memo(function ProductGrid({ onProductClick, onAddToCart }: P
 
   return (
     <section id="coleccion" className="py-16 md:py-32 px-8 md:px-24 bg-dark">
-      <div className="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-24 gap-8">
-        <div>
-          <span className="text-gold text-xs font-bold uppercase tracking-[0.4em] mb-4 block">Selected Works</span>
-          <h2 className="font-serif text-4xl md:text-5xl text-white tracking-tighter">Colección Obsidian</h2>
-        </div>
-        <p className="max-w-md text-gray-400 font-light leading-relaxed">
-          Una curaduría de los aromas más raros y preciosos del Oriente Medio, embotellados en cristal tallado a mano.
-        </p>
-      </div>
-
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1 max-w-md">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
