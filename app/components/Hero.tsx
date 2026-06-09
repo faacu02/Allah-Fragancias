@@ -97,33 +97,14 @@ function Hero({ initialImages, onExploreClick }: HeroProps) {
       </div>
 
       <div className="relative z-10 px-8 md:px-24 max-w-4xl">
-        <motion.span
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-gold text-xs font-bold uppercase tracking-[0.4em] mb-4 block"
-        >
-          Nuestra Herencia
-        </motion.span>
-
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="font-serif text-4xl sm:text-6xl md:text-8xl text-gold-light leading-tight mb-4 tracking-tighter"
         >
-          Esencias del <br/>
-          <span className="italic font-light">Desierto</span>
+          Fragancias 100% originales
         </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-gray-400 text-lg md:text-xl font-light mb-12 tracking-widest uppercase"
-        >
-          Descubra el lujo en cada gota
-        </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
