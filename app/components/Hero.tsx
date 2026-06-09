@@ -4,14 +4,7 @@ import { useState, useEffect, memo } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 
-const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1563170351-be82bc888aa4?auto=format&fit=crop&q=80&w=1920",
-];
-
-interface CarouselImage {
+export interface CarouselImage {
   id: string;
   imageUrl: string;
   title: string;
@@ -19,32 +12,15 @@ interface CarouselImage {
 }
 
 interface HeroProps {
+  initialImages?: CarouselImage[];
   onExploreClick?: () => void;
 }
 
-function Hero({ onExploreClick }: HeroProps) {
-  const [carouselImages, setCarouselImages] = useState<CarouselImage[]>([]);
+function Hero({ initialImages, onExploreClick }: HeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  useEffect(() => {
-    async function fetchCarousel() {
-      try {
-        const res = await fetch('/api/carousel');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.length > 0) {
-            setCarouselImages(data);
-          }
-        }
-      } catch {
-        // Use fallback images on error
-      }
-    }
-    fetchCarousel();
-  }, []);
-
-  const images = carouselImages.length > 0 ? carouselImages : FALLBACK_IMAGES.map((url, i) => ({ id: String(i), imageUrl: url, title: '', order: i }));
+  const images = initialImages || [];
 
   useEffect(() => {
     if (isPaused || images.length === 0) return;
