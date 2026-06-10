@@ -36,7 +36,7 @@ function Navbar({ onRegisterClick, user, onLogout, cartCount = 0, onCartClick, o
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="font-serif text-sm md:text-lg lg:text-2xl font-bold tracking-wider md:tracking-[0.2em] text-gold uppercase text-center absolute left-1/2 -translate-x-1/2 max-w-[50vw] sm:max-w-none overflow-hidden text-ellipsis whitespace-nowrap"
+        className="hidden md:block font-serif text-sm md:text-lg lg:text-2xl font-bold tracking-wider md:tracking-[0.2em] text-gold uppercase text-center absolute left-1/2 -translate-x-1/2 max-w-[50vw] sm:max-w-none overflow-hidden text-ellipsis whitespace-nowrap"
       >
         ALLAH FRAGANCIAS
       </motion.div>
