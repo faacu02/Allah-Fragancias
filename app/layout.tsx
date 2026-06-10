@@ -54,7 +54,8 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: '/favicon-allah.png',
+    icon: [{ url: '/favicon-allah.png', sizes: '32x32' }, { url: '/favicon-allah.png', sizes: '64x64' }],
+    apple: { url: '/favicon-allah.png', sizes: '180x180' },
   },
 };
 
