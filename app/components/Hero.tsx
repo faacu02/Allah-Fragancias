@@ -96,12 +96,12 @@ function Hero({ initialImages, onExploreClick }: HeroProps) {
         </button>
       </div>
 
-      <div className="relative z-10 px-8 md:px-24 max-w-4xl">
+      <div className="relative z-10 px-8 md:px-24 max-w-4xl pt-8 md:pt-12">
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="font-serif text-4xl sm:text-6xl md:text-8xl text-gold-light leading-tight mb-4 tracking-tighter"
+          className="font-serif text-4xl sm:text-6xl md:text-8xl text-gold-light leading-tight mb-16 tracking-tighter"
         >
           Fragancias 100% originales
         </motion.h1>
@@ -109,7 +109,7 @@ function Hero({ initialImages, onExploreClick }: HeroProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 1.0 }}
           className="flex flex-col md:flex-row gap-6"
         >
           <button onClick={onExploreClick} className="bg-gold text-dark px-12 py-4 text-sm font-bold uppercase tracking-[0.2em] hover:bg-gold-light transition-all duration-500">
