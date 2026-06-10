@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import HomeClient from './page-client';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const carouselImages = await prisma.carouselImage.findMany({
     where: { isActive: true },
