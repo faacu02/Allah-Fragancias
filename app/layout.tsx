@@ -53,6 +53,10 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: [{ url: '/favicon-allah.png', sizes: '32x32' }, { url: '/favicon-allah.png', sizes: '64x64' }],
+    apple: { url: '/favicon-allah.png', sizes: '180x180' },
+  },
 };
 
 export const viewport: Viewport = {

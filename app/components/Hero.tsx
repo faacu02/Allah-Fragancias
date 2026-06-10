@@ -4,14 +4,7 @@ import { useState, useEffect, memo } from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 
-const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=1920",
-  "https://images.unsplash.com/photo-1563170351-be82bc888aa4?auto=format&fit=crop&q=80&w=1920",
-];
-
-interface CarouselImage {
+export interface CarouselImage {
   id: string;
   imageUrl: string;
   title: string;
@@ -19,32 +12,15 @@ interface CarouselImage {
 }
 
 interface HeroProps {
+  initialImages?: CarouselImage[];
   onExploreClick?: () => void;
 }
 
-function Hero({ onExploreClick }: HeroProps) {
-  const [carouselImages, setCarouselImages] = useState<CarouselImage[]>([]);
+function Hero({ initialImages, onExploreClick }: HeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  useEffect(() => {
-    async function fetchCarousel() {
-      try {
-        const res = await fetch('/api/carousel');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.length > 0) {
-            setCarouselImages(data);
-          }
-        }
-      } catch {
-        // Use fallback images on error
-      }
-    }
-    fetchCarousel();
-  }, []);
-
-  const images = carouselImages.length > 0 ? carouselImages : FALLBACK_IMAGES.map((url, i) => ({ id: String(i), imageUrl: url, title: '', order: i }));
+  const images = initialImages || [];
 
   useEffect(() => {
     if (isPaused || images.length === 0) return;
@@ -120,39 +96,20 @@ function Hero({ onExploreClick }: HeroProps) {
         </button>
       </div>
 
-      <div className="relative z-10 px-8 md:px-24 max-w-4xl">
-        <motion.span
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-gold text-xs font-bold uppercase tracking-[0.4em] mb-4 block"
-        >
-          Nuestra Herencia
-        </motion.span>
-
+      <div className="relative z-10 px-8 md:px-24 max-w-4xl pt-8 md:pt-12">
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="font-serif text-4xl sm:text-6xl md:text-8xl text-gold-light leading-tight mb-4 tracking-tighter"
+          className="font-serif text-4xl sm:text-6xl md:text-8xl text-gold-light leading-tight mb-16 tracking-tighter"
         >
-          Esencias del <br/>
-          <span className="italic font-light">Desierto</span>
+          Fragancias 100% originales
         </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-gray-400 text-lg md:text-xl font-light mb-12 tracking-widest uppercase"
-        >
-          Descubra el lujo en cada gota
-        </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 1.0 }}
           className="flex flex-col md:flex-row gap-6"
         >
           <button onClick={onExploreClick} className="bg-gold text-dark px-12 py-4 text-sm font-bold uppercase tracking-[0.2em] hover:bg-gold-light transition-all duration-500">
